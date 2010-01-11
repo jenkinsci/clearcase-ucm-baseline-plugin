@@ -26,15 +26,21 @@ package com.michelin.cio.hudson.plugins.clearcaseucmbaseline;
 
 import hudson.Extension;
 import hudson.model.AbstractProject;
+import hudson.model.Computer;
 import hudson.model.Hudson;
+import hudson.model.JobProperty;
+import hudson.model.Node;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.TaskListener;
 import hudson.plugins.clearcase.PluginImpl;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
 import net.sf.json.JSONObject;
 import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -66,9 +72,9 @@ import org.kohsuke.stapler.StaplerRequest;
  * </ul></p>
  *
  * @author Romain Seguy (http://davadoc.deviantart.com)
- * @version 1.0
+ * @version 1.0.1
  */
-public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition {
+public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition implements Comparable<ClearCaseUcmBaselineParameterDefinition> {
 
     public final static String PARAMETER_NAME = "ClearCase UCM baseline";
 
@@ -81,9 +87,15 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
      * offered with all the baselines of the ClearCase UCM component.
      */
     private final String promotionLevel;
+    /**
+     * We use a UUID to uniquely identify each use of this parameter: We need this
+     * to find the project and the node using this parameter in the getBaselines()
+     * method (which is called before the build takes place).
+     */
+    private final UUID uuid;
 
     @DataBoundConstructor
-    public ClearCaseUcmBaselineParameterDefinition(String pvob, String vob, String component, String promotionLevel, String viewName) {
+    public ClearCaseUcmBaselineParameterDefinition(String pvob, String vob, String component, String promotionLevel, String viewName, String uuid) {
         super(PARAMETER_NAME); // we keep the name of the parameter not
                                          // internationalized, it will save many
                                          // issues when updating system settings
@@ -92,6 +104,13 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         this.component = component;
         this.promotionLevel = promotionLevel;
         this.viewName = viewName;
+
+        if(uuid == null || uuid.length() == 0) {
+            this.uuid = UUID.randomUUID();
+        }
+        else {
+            this.uuid = UUID.fromString(uuid);
+        }
     }
 
     // This method is invoked from a GET or POST HTTP request
@@ -142,8 +161,40 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         cmd.add("-component");
         cmd.add(component + '@' + pvob);
 
+        // we have to find the node the job is assigned to so that we run the
+        // cleartool command at the right place
+        Node nodeRunningThisJob = Hudson.getInstance();
+        for(Node node: Hudson.getInstance().getNodes()) {
+            Computer computer = node.toComputer();
+            if(computer != null) {
+                List<AbstractProject> jobs = computer.getTiedJobs();
+                if(jobs == null) {
+                    continue;
+                }
+
+                boolean nodeRunningThisJobFound = false;
+                for(AbstractProject project : jobs) {
+                    ParametersDefinitionProperty property = (ParametersDefinitionProperty) project.getProperty(ParametersDefinitionProperty.class);
+                    if(property != null) {
+                        ClearCaseUcmBaselineParameterDefinition pd = (ClearCaseUcmBaselineParameterDefinition) property.getParameterDefinition(PARAMETER_NAME);
+                        if(pd != null) {
+                            if(pd.compareTo(this) == 0) {
+                                nodeRunningThisJob = node;
+                                nodeRunningThisJobFound = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if(nodeRunningThisJobFound) {
+                    break;
+                }
+            }
+        }
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Hudson.getInstance().createLauncher(TaskListener.NULL).launch().cmds(cmd).stdout(baos).join();
+        nodeRunningThisJob.createLauncher(TaskListener.NULL).launch().cmds(cmd).stdout(baos).join();
         String cleartoolOutput = ClearCaseUcmBaselineUtils.processCleartoolOuput(baos);
         baos.close();
 
@@ -173,6 +224,13 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
 
     public String getVob() {
         return vob;
+    }
+
+    public int compareTo(ClearCaseUcmBaselineParameterDefinition pd) {
+        if(pd.uuid.equals(uuid)) {
+            return 0;
+        }
+        return -1;
     }
 
     @Extension
