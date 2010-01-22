@@ -23,11 +23,16 @@
   -->
 
 <div>
-    Lorsqu'il est utilis&acute;, ce param&egrave;tre affiche, au d&acute;marrage
-    d'un build, un champ qui permet &agrave; l'utilisateur de choisir, parmi une
-    liste de lignes de base ClearCase UCM, laquelle sera
-    t&acute;l&acute;charg&acute;e pour servir &agrave; ce projet.<br/>
-    Pour utiliser ce param&egrave;tre, vous devez aussi obligatoirement
-    d&acute;finir le SCM comme &acute;tant "Ligne de base ClearCase UCM".
-    Autrement, les builds &acute;choueront syst&acute;matiquement.
+    <b>Optionnel</b> &mdash; Liste des r&acute;pertoires (un r&acute;pertoire
+    par ligne) qui seront t&acute;l&acute;charg&acute;s depuis ClearCase.<br/>
+    Si aucune restriction n'est d&acute;finie, alors l'ensemble du contenu de la
+    ligne de base ClearCase UCM sera t&acute;l&acute;charg&acute;e. Si des
+    restrictions sont d&acute;finies, alors seules les dossiers correspondants
+    seront t&acute;l&acute;charg&acute;s.<br/>
+    Pour chaque r&acute;pertoire &agrave; t&eacute;l&eacute;charger, n'oubliez
+    pas de pr&acute;ciser le nom de la VOB et du composant auquel il appartient.
+    Par exemple, si vous voulez t&acute;l&acute;charger le r&acute;pertoire
+    <code>05_impl/0_src</code> qui est dans le composant <code>fa4_web</code> de
+    la VOB <code>fa4</code>, il faut saisir <code>/fa/fa4_web/05_impl/0_src
+    </code>.
 </div>

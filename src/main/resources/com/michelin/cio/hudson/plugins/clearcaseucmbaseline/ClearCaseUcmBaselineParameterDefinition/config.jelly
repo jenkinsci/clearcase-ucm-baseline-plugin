@@ -35,6 +35,11 @@
     <f:entry title="${%Promotion level}" field="promotionLevel">
         <f:textbox name="parameter.promotionLevel" value="${instance.promotionLevel}" />
     </f:entry>
+    <f:entry title="${%Restric folders to}" field="restrictions">
+        <f:expandableTextbox
+            name="parameter.restrictions"
+            value="${instance.restrictions}" />
+    </f:entry>
     <f:entry title="${%View name}" field="viewName">
         <f:textbox name="parameter.viewName" value="${instance.viewName}" />
     </f:entry>

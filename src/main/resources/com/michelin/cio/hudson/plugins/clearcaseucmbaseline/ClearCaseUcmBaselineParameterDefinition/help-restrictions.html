@@ -23,11 +23,14 @@
   -->
 
 <div>
-    Lorsqu'il est utilis&acute;, ce param&egrave;tre affiche, au d&acute;marrage
-    d'un build, un champ qui permet &agrave; l'utilisateur de choisir, parmi une
-    liste de lignes de base ClearCase UCM, laquelle sera
-    t&acute;l&acute;charg&acute;e pour servir &agrave; ce projet.<br/>
-    Pour utiliser ce param&egrave;tre, vous devez aussi obligatoirement
-    d&acute;finir le SCM comme &acute;tant "Ligne de base ClearCase UCM".
-    Autrement, les builds &acute;choueront syst&acute;matiquement.
+    <b>Optional</b> &mdash; List of folders (one folder per line) to be actually
+    downloaded from ClearCase.<br/>
+    If no restrictions are defined, then all the data for the selected ClearCase
+    UCM baseline will be downloaded. If restrictions are defined, then only
+    these folders will be downloaded.<br/>
+    For each folder to download, don't forget to add the VOB name and the
+    component name this folder belongs to. For example, if you want to download
+    the folder <code>05_impl/0_src</code> which is in the <code>fa4_web</code>
+    component of the <code>fa4</code> VOB, set the value to <code>
+    /fa/fa4_web/05_impl/0_src</code>.
 </div>

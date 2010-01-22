@@ -25,10 +25,10 @@
 package com.michelin.cio.hudson.plugins.clearcaseucmbaseline;
 
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Hudson;
-import hudson.model.JobProperty;
 import hudson.model.Node;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
@@ -39,6 +39,7 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import net.sf.json.JSONObject;
@@ -72,21 +73,27 @@ import org.kohsuke.stapler.StaplerRequest;
  * </ul></p>
  *
  * @author Romain Seguy (http://davadoc.deviantart.com)
- * @version 1.0.1
+ * @version 1.1
  */
 public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition implements Comparable<ClearCaseUcmBaselineParameterDefinition> {
 
     public final static String PARAMETER_NAME = "ClearCase UCM baseline";
 
     private final String component;
-    private final String pvob;
-    private final String viewName;
-    private final String vob;
     /**
      * The promotion level is optional: If not is set, then the user will be
      * offered with all the baselines of the ClearCase UCM component.
      */
     private final String promotionLevel;
+    private final String pvob;
+    /**
+     * List of folders to be actually retrieved from CC. If no restriction is
+     * defined, then the whole data will be downloaded. If some restrictions are
+     * defined, then only the corresponding folders will be downloaded.
+     */
+    private final String restrictions;
+    private final String viewName;
+    private final String vob;
     /**
      * We use a UUID to uniquely identify each use of this parameter: We need this
      * to find the project and the node using this parameter in the getBaselines()
@@ -95,14 +102,15 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
     private final UUID uuid;
 
     @DataBoundConstructor
-    public ClearCaseUcmBaselineParameterDefinition(String pvob, String vob, String component, String promotionLevel, String viewName, String uuid) {
+    public ClearCaseUcmBaselineParameterDefinition(String pvob, String vob, String component, String promotionLevel, String restrictions, String viewName, String uuid) {
         super(PARAMETER_NAME); // we keep the name of the parameter not
-                                         // internationalized, it will save many
-                                         // issues when updating system settings
+                               // internationalized, it will save many
+                               // issues when updating system settings
         this.pvob = pvob;
         this.vob = vob;
         this.component = component;
         this.promotionLevel = promotionLevel;
+        this.restrictions = restrictions;
         this.viewName = viewName;
 
         if(uuid == null || uuid.length() == 0) {
@@ -137,6 +145,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         value.setVob(vob);
         value.setComponent(component);
         value.setPromotionLevel(promotionLevel);
+        value.setRestrictions(getRestrictionsAsList());
         value.setViewName(viewName);
 
         return value;
@@ -216,6 +225,20 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
 
     public String getPvob() {
         return pvob;
+    }
+
+    public String getRestrictions() {
+        return restrictions;
+    }
+
+    public List<String> getRestrictionsAsList() {
+        ArrayList<String> restrictionsAsList = new ArrayList<String>();
+        if(getRestrictions() != null && getRestrictions().length() > 0) {
+            for(String restriction: Util.tokenize(getRestrictions(), "\n\r\f")) {
+                restrictionsAsList.add(restriction);
+            }
+        }
+        return restrictionsAsList;
     }
 
     public String getViewName() {

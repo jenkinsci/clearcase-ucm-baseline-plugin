@@ -43,6 +43,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
@@ -67,7 +68,7 @@ import org.kohsuke.stapler.export.Exported;
  * </ul></p>
  *
  * @author Romain Seguy (http://davadoc.deviantart.com)
- * @version 1.0
+ * @version 1.1
  */
 public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
@@ -75,6 +76,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     @Exported(visibility=3) private String component;       // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private String promotionLevel;  // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private String pvob;            // this att comes from ClearCaseUcmBaselineParameterDefinition
+    private List<String> restrictions;
     @Exported(visibility=3) private String viewName;        // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private String vob;             // this att comes from ClearCaseUcmBaselineParameterDefinition
     private String normalizedViewName;
@@ -190,13 +192,35 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                     }
 
                     configSpec.append("element * /main/0\n");
-                    configSpec.append("load ").append(rootDir).append('\n');
+
+                    // is any download restriction defined?
+                    if(restrictions != null && restrictions.size() > 0) {
+                        for(String restriction: restrictions) {
+                            if(restriction.startsWith(rootDir)) {
+                                configSpec.append("load ").append(restriction).append('\n');
+                            }
+                        }
+                    }
+                    else {
+                        configSpec.append("load ").append(rootDir).append('\n');
+                    }
 
                     for(String dependentBaselineSelector: dependentBaselines) {
                         String dependentBaseline = dependentBaselineSelector.split("@")[0];
                         String component = cleartool.getComponentFromBaseline(pvob, dependentBaseline);
                         rootDir = cleartool.getComponentRootDir(pvob, component);
-                        configSpec.append("load ").append(rootDir).append('\n');
+
+                        // is any download restriction defined?
+                        if(restrictions != null && restrictions.size() > 0) {
+                            for(String restriction: restrictions) {
+                                if(restriction.startsWith(rootDir)) {
+                                    configSpec.append("load ").append(restriction).append('\n');
+                                }
+                            }
+                        }
+                        else {
+                            configSpec.append("load ").append(rootDir).append('\n');
+                        }
                     }
 
                     listener.getLogger().println("The view will be created based on the following config spec:");
@@ -206,7 +230,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
                     // --- 4. We actually load the view based on the configspec ---
 
-                    //cleartool setcs <configspec>
+                    // cleartool setcs <configspec>
                     cleartool.setcs(normalizedViewName, configSpec.toString());
 
                     // --- 5. Create the environment variables ---
@@ -278,6 +302,10 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
     public void setPvob(String pvob) {
         this.pvob = pvob;
+    }
+
+    public void setRestrictions(List<String> restrictions) {
+        this.restrictions = restrictions;
     }
 
     public String getViewName() {
