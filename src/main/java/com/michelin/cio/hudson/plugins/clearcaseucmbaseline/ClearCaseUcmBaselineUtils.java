@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2009, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+ * Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
  * Copyright (c) 2007-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
  *                          Henrik Lynggaard, Peter Liljenberg, Andrew Bayer
  *
@@ -34,7 +34,6 @@ import java.io.InputStreamReader;
 
 /**
  * @author Romain Seguy (http://davadoc.deviantart.com)
- * @version 1.0
  */
 public class ClearCaseUcmBaselineUtils {
 

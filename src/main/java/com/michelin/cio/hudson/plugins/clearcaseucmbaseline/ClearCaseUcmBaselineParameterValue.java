@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2009, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+ * Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
  * Copyright (c) 2007-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
  *                          Henrik Lynggaard, Peter Liljenberg, Andrew Bayer
  *
@@ -68,7 +68,6 @@ import org.kohsuke.stapler.export.Exported;
  * </ul></p>
  *
  * @author Romain Seguy (http://davadoc.deviantart.com)
- * @version 1.1
  */
 public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
@@ -238,6 +237,8 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                     return new Environment() {
                         @Override
                         public void buildEnvVars(Map<String, String> env) {
+                            env.put(ClearCaseUcmBaselineSCM.CLEARCASE_UCMBASELINE_ENVSTR,
+                                    baseline);
                             env.put(AbstractClearCaseScm.CLEARCASE_VIEWNAME_ENVSTR,
                                     normalizedViewName);
                             env.put(AbstractClearCaseScm.CLEARCASE_VIEWPATH_ENVSTR,

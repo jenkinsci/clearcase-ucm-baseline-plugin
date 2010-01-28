@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2009, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+ * Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,7 +73,6 @@ import org.kohsuke.stapler.StaplerRequest;
  * </ul></p>
  *
  * @author Romain Seguy (http://davadoc.deviantart.com)
- * @version 1.1
  */
 public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition implements Comparable<ClearCaseUcmBaselineParameterDefinition> {
 
