@@ -63,7 +63,7 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class ClearCaseUcmBaselineSCM extends SCM {
 
-    public final static String CLEARCASE_UCMBASELINE_ENVSTR = "CLEARCASE_UCMBASELINE";
+    public final static String CLEARCASE_BASELINE_ENVSTR = "CLEARCASE_BASELINE";
 
     @DataBoundConstructor
     public ClearCaseUcmBaselineSCM() {

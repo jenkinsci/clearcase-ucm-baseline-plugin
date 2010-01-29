@@ -237,7 +237,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                     return new Environment() {
                         @Override
                         public void buildEnvVars(Map<String, String> env) {
-                            env.put(ClearCaseUcmBaselineSCM.CLEARCASE_UCMBASELINE_ENVSTR,
+                            env.put(ClearCaseUcmBaselineSCM.CLEARCASE_BASELINE_ENVSTR,
                                     baseline);
                             env.put(AbstractClearCaseScm.CLEARCASE_VIEWNAME_ENVSTR,
                                     normalizedViewName);
