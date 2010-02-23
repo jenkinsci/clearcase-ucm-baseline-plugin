@@ -131,7 +131,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         }
         else {
             return new ClearCaseUcmBaselineParameterValue(
-                    getName(), getPvob(), getVob(), getComponent(), getPromotionLevel(), getViewName(), values[0]);
+                    getName(), getPvob(), getVob(), getComponent(), getPromotionLevel(), getViewName(), values[0], true);
         }
     }
 

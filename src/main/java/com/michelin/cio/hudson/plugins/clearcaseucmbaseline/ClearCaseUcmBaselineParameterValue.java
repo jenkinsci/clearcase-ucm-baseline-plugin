@@ -34,6 +34,8 @@ import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.plugins.clearcase.AbstractClearCaseScm;
 import hudson.plugins.clearcase.ClearToolLauncher;
@@ -44,11 +46,8 @@ import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
@@ -77,15 +76,20 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
     @Exported(visibility=3) private String baseline;        // this att is set by the user once the build takes place
     @Exported(visibility=3) private String component;       // this att comes from ClearCaseUcmBaselineParameterDefinition
+    @Exported(visibility=3) private boolean forceRmview;
     @Exported(visibility=3) private String promotionLevel;  // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private String pvob;            // this att comes from ClearCaseUcmBaselineParameterDefinition
     private List<String> restrictions;
     @Exported(visibility=3) private String viewName;        // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private String vob;             // this att comes from ClearCaseUcmBaselineParameterDefinition
-    private String normalizedViewName;
 
     @DataBoundConstructor
     public ClearCaseUcmBaselineParameterValue(String name, String pvob, String vob, String component, String promotionLevel, String viewName, String baseline) {
+       this(name, pvob, vob, component, promotionLevel, viewName, baseline, true);
+    }
+
+    @DataBoundConstructor
+    public ClearCaseUcmBaselineParameterValue(String name, String pvob, String vob, String component, String promotionLevel, String viewName, String baseline, boolean forceRmview) {
         super(name);
         this.pvob = pvob;
         this.vob = vob;
@@ -93,6 +97,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
         this.promotionLevel = promotionLevel;
         this.viewName = viewName;
         this.baseline = baseline;
+        this.forceRmview = forceRmview;
     }
 
     /**
@@ -172,59 +177,85 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                     ClearToolLauncher clearToolLauncher = createClearToolLauncher(listener, build.getProject().getWorkspace(), launcher);
                     ClearToolUcmBaseline cleartool = new ClearToolUcmBaseline(variableResolver, clearToolLauncher);
 
-                    normalizedViewName = generateNormalizedViewName(variableResolver, viewName);
+                    viewName = generateNormalizedViewName(variableResolver, viewName);
 
                     FilePath workspace = build.getProject().getWorkspace();
-                    FilePath viewPath = workspace.child(normalizedViewName);
+                    FilePath viewPath = workspace.child(viewName);
                     String rootDir = '/' + vob + '/' + component;
                     StringBuilder configSpec = new StringBuilder();
 
-                    // TODO Don't create the view if it already exists
+                    // --- 0. Has the same baseline been retrieved during last execution? ---
 
-                    // --- 1. We remove the view if it already exists ---
+                    boolean lastBuildUsedSameBaseline = false;
 
-                    if(viewPath.exists()) {
-                        cleartool.rmview(normalizedViewName);
-                    }
+                    if(forceRmview == false) { // we care only if we don't want to remove the existing view
+                        ClearCaseUcmBaselineParameterValue lastCcParamValue = null;
 
-                    // --- 2. We first create the view to be loaded ---
+                        // tons of loops and ifs to find the ClearCaseUcmBaselineParameterValue of the last build, if any
+                        List<Run> builds = build.getProject().getBuilds();
+                        if(builds.size() > 1) {
+                            Run latestBuild = builds.get(1); // builds.get(0) is the currently running build
+                            List<ParametersAction> actions = latestBuild.getActions(ParametersAction.class);
+                            if(actions != null) {
+                                for(ParametersAction action : actions) {
+                                    List<ParameterValue> parameters = action.getParameters();
+                                    if(parameters != null) {
+                                        for(ParameterValue parameter : parameters) {
+                                            if(parameter instanceof ClearCaseUcmBaselineParameterValue) {
+                                                lastCcParamValue = (ClearCaseUcmBaselineParameterValue) parameter;
+                                                // there can be only one time this kind of parameter, so let's break
+                                                break;
+                                            }
+                                        }
+                                    }
 
-                    // cleartool mkview -tag <tag> <view path>
-                    cleartool.mkview(normalizedViewName, null);
+                                    if(lastCcParamValue != null) {
+                                        // there can be only one time this kind of parameter, so let's break here too
+                                        break;
+                                    }
+                                }
+                            }
+                        }
 
-                    // --- 3. We create the configspec ---
-
-                    configSpec.append("element * CHECKEDOUT\n");
-                    configSpec.append("element ").append(rootDir).append("/... ").append(baseline).append('\n');
-
-                    // cleartool lsbl -fmt "%[depends_on_closure]p" <baseline>@<vob>
-                    String[] dependentBaselines = cleartool.getDependentBaselines(pvob, baseline);
-
-                    for(String dependentBaselineSelector: dependentBaselines) {
-                        String dependentBaseline = dependentBaselineSelector.split("@")[0];
-                        String component = cleartool.getComponentFromBaseline(pvob, dependentBaseline);
-                        rootDir = cleartool.getComponentRootDir(pvob, component);
-                        configSpec.append("element ").append(rootDir).append("/... ").append(dependentBaseline).append('\n');
-                    }
-
-                    configSpec.append("element * /main/0\n");
-
-                    // is any download restriction defined?
-                    if(restrictions != null && restrictions.size() > 0) {
-                        for(String restriction: restrictions) {
-                            if(restriction.startsWith(rootDir)) {
-                                configSpec.append("load ").append(restriction).append('\n');
+                        if(lastCcParamValue != null) {
+                            if(vob.equals(lastCcParamValue.vob)
+                                    && pvob.equals(lastCcParamValue.pvob)
+                                    && component.equals(lastCcParamValue.component)
+                                    && baseline.equals(lastCcParamValue.baseline)) {
+                                // the baseline used in the latest build is the same as the newly requested one
+                                lastBuildUsedSameBaseline = true;
                             }
                         }
                     }
-                    else {
-                        configSpec.append("load ").append(rootDir).append('\n');
-                    }
 
-                    for(String dependentBaselineSelector: dependentBaselines) {
-                        String dependentBaseline = dependentBaselineSelector.split("@")[0];
-                        String component = cleartool.getComponentFromBaseline(pvob, dependentBaseline);
-                        rootDir = cleartool.getComponentRootDir(pvob, component);
+                    if(forceRmview || !lastBuildUsedSameBaseline || !viewPath.exists()) {
+                        // --- 1. We remove the view if it already exists ---
+
+                        if(viewPath.exists()) {
+                            cleartool.rmview(viewName);
+                        }
+
+                        // --- 2. We first create the view to be loaded ---
+
+                        // cleartool mkview -tag <tag> <view path>
+                        cleartool.mkview(viewName, null);
+
+                        // --- 3. We create the configspec ---
+
+                        configSpec.append("element * CHECKEDOUT\n");
+                        configSpec.append("element ").append(rootDir).append("/... ").append(baseline).append('\n');
+
+                        // cleartool lsbl -fmt "%[depends_on_closure]p" <baseline>@<vob>
+                        String[] dependentBaselines = cleartool.getDependentBaselines(pvob, baseline);
+
+                        for(String dependentBaselineSelector: dependentBaselines) {
+                            String dependentBaseline = dependentBaselineSelector.split("@")[0];
+                            String component = cleartool.getComponentFromBaseline(pvob, dependentBaseline);
+                            rootDir = cleartool.getComponentRootDir(pvob, component);
+                            configSpec.append("element ").append(rootDir).append("/... ").append(dependentBaseline).append('\n');
+                        }
+
+                        configSpec.append("element * /main/0\n");
 
                         // is any download restriction defined?
                         if(restrictions != null && restrictions.size() > 0) {
@@ -237,17 +268,38 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                         else {
                             configSpec.append("load ").append(rootDir).append('\n');
                         }
+
+                        for(String dependentBaselineSelector: dependentBaselines) {
+                            String dependentBaseline = dependentBaselineSelector.split("@")[0];
+                            String component = cleartool.getComponentFromBaseline(pvob, dependentBaseline);
+                            rootDir = cleartool.getComponentRootDir(pvob, component);
+
+                            // is any download restriction defined?
+                            if(restrictions != null && restrictions.size() > 0) {
+                                for(String restriction: restrictions) {
+                                    if(restriction.startsWith(rootDir)) {
+                                        configSpec.append("load ").append(restriction).append('\n');
+                                    }
+                                }
+                            }
+                            else {
+                                configSpec.append("load ").append(rootDir).append('\n');
+                            }
+                        }
+
+                        listener.getLogger().println("The view will be created based on the following config spec:");
+                        listener.getLogger().println("--- config spec start ---");
+                        listener.getLogger().print(configSpec.toString());
+                        listener.getLogger().println("---  config spec end  ---");
+
+                        // --- 4. We actually load the view based on the configspec ---
+
+                        // cleartool setcs <configspec>
+                        cleartool.setcs(viewName, configSpec.toString());
                     }
-
-                    listener.getLogger().println("The view will be created based on the following config spec:");
-                    listener.getLogger().println("--- config spec start ---");
-                    listener.getLogger().print(configSpec.toString());
-                    listener.getLogger().println("---  config spec end  ---");
-
-                    // --- 4. We actually load the view based on the configspec ---
-
-                    // cleartool setcs <configspec>
-                    cleartool.setcs(normalizedViewName, configSpec.toString());
+                    else {
+                        listener.getLogger().println("The requested ClearCase UCM baseline is the same as previous build: Reusing previously loaded view");
+                    }
 
                     // --- 5. Create the environment variables ---
 
@@ -257,9 +309,9 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                             env.put(ClearCaseUcmBaselineSCM.CLEARCASE_BASELINE_ENVSTR,
                                     baseline);
                             env.put(AbstractClearCaseScm.CLEARCASE_VIEWNAME_ENVSTR,
-                                    normalizedViewName);
+                                    viewName);
                             env.put(AbstractClearCaseScm.CLEARCASE_VIEWPATH_ENVSTR,
-                                    env.get("WORKSPACE") + File.separator + normalizedViewName);
+                                    env.get("WORKSPACE") + File.separator + viewName);
                         }
                     };
                 }
@@ -304,6 +356,14 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
     public void setComponent(String component) {
         this.component = component;
+    }
+
+    public boolean getForceRmview() {
+        return forceRmview;
+    }
+
+    public void setForceRmview(boolean forceRmview) {
+        this.forceRmview = forceRmview;
     }
 
     public String getPromotionLevel() {

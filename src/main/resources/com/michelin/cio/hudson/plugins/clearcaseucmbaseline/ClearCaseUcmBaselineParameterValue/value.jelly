@@ -24,21 +24,24 @@
 
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <f:entry title="${%PVOB}">
-        <f:textbox name="parameter.pvob" value="${it.pvob}" />
+        <f:textbox name="pvob" value="${it.pvob}" />
     </f:entry>
     <f:entry title="${%VOB}">
-        <f:textbox name="parameter.vob" value="${it.vob}" />
+        <f:textbox name="vob" value="${it.vob}" />
     </f:entry>
     <f:entry title="${%Component}">
-        <f:textbox name="parameter.component" value="${it.component}" />
+        <f:textbox name="component" value="${it.component}" />
     </f:entry>
     <f:entry title="${%Promotion level}">
-        <f:textbox name="parameter.promotionLevel" value="${it.promotionLevel}" />
+        <f:textbox name="promotionLevel" value="${it.promotionLevel}" />
     </f:entry>
     <f:entry title="${%View name}">
-        <f:textbox name="parameter.viewName" value="${it.viewName}" />
+        <f:textbox name="viewName" value="${it.viewName}" />
     </f:entry>
     <f:entry title="${%Baseline}">
         <f:textbox name="baseline" value="${it.baseline}"/>
+    </f:entry>
+    <f:entry title="${%Force rmview}">
+        <f:textbox name="forceRmview" value="${it.forceRmview}"/>
     </f:entry>
 </j:jelly>
