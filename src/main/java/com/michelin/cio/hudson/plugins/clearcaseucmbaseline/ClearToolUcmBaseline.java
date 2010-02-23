@@ -260,6 +260,11 @@ public class ClearToolUcmBaseline extends ClearToolExec {
         }
     }
 
+    // ClearCase plugin 1.1 upward compatibility
+    public void mkview(String string, String string1, String string2) throws IOException, InterruptedException {
+        unsupportedMethod(Thread.currentThread().getStackTrace()[0]);
+    }
+
     public void setcs(String viewName, String configSpec) throws IOException, InterruptedException {
         FilePath workspace = launcher.getWorkspace();
         FilePath configSpecFile = workspace.createTextTempFile("configspec", ".txt", configSpec);

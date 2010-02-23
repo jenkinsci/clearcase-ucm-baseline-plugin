@@ -31,6 +31,7 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
+import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.ParameterValue;
 import hudson.model.TaskListener;
@@ -43,8 +44,11 @@ import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
@@ -151,7 +155,20 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                  */
                 @Override
                 public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-                    VariableResolver variableResolver = new BuildVariableResolver(build, launcher);
+                    VariableResolver variableResolver = null;
+                    try {
+                        // this plugin is built against ClearCase plugin 1.0...
+                        variableResolver = new BuildVariableResolver(build, launcher);
+                    }
+                    catch(NoSuchMethodError nsme) {
+                        // ...but it is also upward compatible with ClearCase plugin 1.1
+                        try {
+                            variableResolver = (VariableResolver) BuildVariableResolver.class.getConstructors()[0].newInstance(build, Computer.currentComputer());
+                        } catch(Exception e) {
+                            listener.fatalError("No variable resolver has been instantiated: The build will surely crash, but let's make a try...");
+                        }
+                    }
+                    
                     ClearToolLauncher clearToolLauncher = createClearToolLauncher(listener, build.getProject().getWorkspace(), launcher);
                     ClearToolUcmBaseline cleartool = new ClearToolUcmBaseline(variableResolver, clearToolLauncher);
 
