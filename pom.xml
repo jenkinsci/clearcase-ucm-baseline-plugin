@@ -13,7 +13,7 @@
   <packaging>hpi</packaging>
   <name>Hudson ClearCase UCM Baseline Plug-in</name>
   <url>http://wiki.hudson-ci.org/display/HUDSON/ClearCase+UCM+Baseline+Plugin</url>
-  <version>1.3-SNAPHOT</version>
+  <version>1.3-SNAPSHOT</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
