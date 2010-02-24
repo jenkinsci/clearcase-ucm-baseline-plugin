@@ -84,11 +84,6 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     @Exported(visibility=3) private String vob;             // this att comes from ClearCaseUcmBaselineParameterDefinition
 
     @DataBoundConstructor
-    public ClearCaseUcmBaselineParameterValue(String name, String pvob, String vob, String component, String promotionLevel, String viewName, String baseline) {
-       this(name, pvob, vob, component, promotionLevel, viewName, baseline, true);
-    }
-
-    @DataBoundConstructor
     public ClearCaseUcmBaselineParameterValue(String name, String pvob, String vob, String component, String promotionLevel, String viewName, String baseline, boolean forceRmview) {
         super(name);
         this.pvob = pvob;
