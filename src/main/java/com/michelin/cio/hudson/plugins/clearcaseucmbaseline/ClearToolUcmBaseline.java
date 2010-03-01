@@ -274,6 +274,8 @@ public class ClearToolUcmBaseline extends ClearToolExec {
         // cleartool setcs <configspec>
         ArgumentListBuilder cmd = new ArgumentListBuilder();
         cmd.add("setcs");
+        cmd.add("-tag");
+        cmd.add(viewName);
      	cmd.add(configSpecLocation);
 
         // run the cleartool command
