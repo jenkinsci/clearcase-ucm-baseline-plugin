@@ -105,8 +105,8 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         super(PARAMETER_NAME); // we keep the name of the parameter not
                                // internationalized, it will save many
                                // issues when updating system settings
-        this.pvob = pvob;
-        this.vob = vob;
+        this.pvob = ClearCaseUcmBaselineUtils.prefixWithSlash(pvob);
+        this.vob = ClearCaseUcmBaselineUtils.prefixWithSlash(vob);
         this.component = component;
         this.promotionLevel = promotionLevel;
         this.restrictions = restrictions;

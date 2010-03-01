@@ -37,6 +37,16 @@ import java.io.InputStreamReader;
  */
 public class ClearCaseUcmBaselineUtils {
 
+    public static String prefixWithSlash(final String s) {
+        if(s != null && s.length() > 0 && s.startsWith("\\")) {
+            return '/' + s.substring(1);
+        }
+        if(s != null && s.length() > 0 && !s.startsWith("/")) {
+            return '/' + s;
+        }
+        return s;
+    }
+
     /**
      * Processes the cleartool output produced when invoking {@code launcher.run()}
      * to return it as a plain {@link String}.

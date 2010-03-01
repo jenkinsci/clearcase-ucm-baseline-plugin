@@ -86,8 +86,8 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     @DataBoundConstructor
     public ClearCaseUcmBaselineParameterValue(String name, String pvob, String vob, String component, String promotionLevel, String viewName, String baseline, boolean forceRmview) {
         super(name);
-        this.pvob = pvob;
-        this.vob = vob;
+        this.pvob = ClearCaseUcmBaselineUtils.prefixWithSlash(pvob);
+        this.vob = ClearCaseUcmBaselineUtils.prefixWithSlash(vob);
         this.component = component;
         this.promotionLevel = promotionLevel;
         this.viewName = viewName;
@@ -176,7 +176,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
                     FilePath workspace = build.getProject().getWorkspace();
                     FilePath viewPath = workspace.child(viewName);
-                    String rootDir = '/' + vob + '/' + component;
+                    String rootDir = cleartool.getComponentRootDir(pvob, component);
                     StringBuilder configSpec = new StringBuilder();
 
                     // --- 0. Has the same baseline been retrieved during last execution? ---
