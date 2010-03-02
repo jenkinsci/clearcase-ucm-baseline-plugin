@@ -40,4 +40,7 @@
     <f:entry title="${%View name}" field="viewName">
         <f:textbox name="parameter.viewName" value="${instance.viewName}" />
     </f:entry>
+    <f:entry field="forceRmview">
+        <f:checkbox name="forceRmview"/><label class="attach-previous">${%Force rmview}</label>
+    </f:entry>
 </j:jelly>

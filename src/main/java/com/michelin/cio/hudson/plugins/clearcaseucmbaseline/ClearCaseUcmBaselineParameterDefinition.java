@@ -78,6 +78,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
     public final static String PARAMETER_NAME = "ClearCase UCM baseline";
 
     private final String component;
+    private final boolean forceRmview;
     /**
      * The promotion level is optional: If not is set, then the user will be
      * offered with all the baselines of the ClearCase UCM component.
@@ -99,7 +100,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
     private final UUID uuid;
 
     @DataBoundConstructor
-    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String restrictions, String viewName, String uuid) {
+    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String restrictions, String viewName, boolean forceRmview, String uuid) {
         super(PARAMETER_NAME); // we keep the name of the parameter not
                                // internationalized, it will save many
                                // issues when updating system settings
@@ -108,6 +109,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         this.promotionLevel = promotionLevel;
         this.restrictions = restrictions;
         this.viewName = viewName;
+        this.forceRmview = forceRmview;
 
         if(uuid == null || uuid.length() == 0) {
             this.uuid = UUID.randomUUID();
@@ -128,7 +130,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         }
         else {
             return new ClearCaseUcmBaselineParameterValue(
-                    getName(), getPvob(), getComponent(), getPromotionLevel(), getViewName(), values[0], true);
+                    getName(), getPvob(), getComponent(), getPromotionLevel(), getViewName(), values[0], getForceRmview());
         }
     }
 
@@ -142,6 +144,10 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         value.setPromotionLevel(promotionLevel);
         value.setRestrictions(getRestrictionsAsList());
         value.setViewName(viewName);
+        // we don't set forceRmview: we use the value which is set by the user
+        // (so it is in formData) to allow overriding the setting ==> the value
+        // was set when invoking req.bindJSON()
+        //value.setForceRmview(forceRmview);
 
         return value;
     }
@@ -212,6 +218,10 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
 
     public String getComponent() {
         return component;
+    }
+
+    public boolean getForceRmview() {
+        return forceRmview;
     }
 
     public String getPromotionLevel() {

@@ -33,7 +33,7 @@
                 </j:forEach>
             </select>
             <br/>
-            <f:checkbox name="forceRmview"/><label class="attach-previous">${%Force rmview}</label>
+            <f:checkbox name="forceRmview" checked="${it.forceRmview}"/><label class="attach-previous">${%Force rmview}</label>
         </div>
     </f:entry>
 </j:jelly>

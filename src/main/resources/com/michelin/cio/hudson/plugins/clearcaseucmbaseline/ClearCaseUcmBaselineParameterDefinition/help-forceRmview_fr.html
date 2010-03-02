@@ -23,19 +23,12 @@
   -->
 
 <div>
-    <b>Obligatoire</b> &mdash; Nom de la vue ClearCase UCM qui sera
-    cr&acute;&acute; pour  permettre le t&acute;l&acute;chargement de la ligne
-    de base ClearCase UCM s&acute;lectionn&acute;e lors d'un build.<br/>
-    Il est possible d'utiliser deux variables pour construire le nom de la vue:<ul>
-    <li><code>JOB_NAME</code> sera remplac&eacute; par le nom du job ;</li>
-    <li><code>USER_NAME</code> sera remplac&eacute; par le nom de l'utilisateur
-        avec lequel Hudson s'ex&eacute;cute.</li>
-    </ul>
-    Il est possible d'acc&acute;der &agrave; cette vue en utilisant l'une des
-    deux variables d'environnement ci-dessous:<ul>
-    <li>le nom de la vue est disponible en tant que <code>CLEARCASE_VIEWNAME
-        </code> ;</li>
-    <li>le chemin absolu vers cette vue est disponible en tant que <code>
-        CLEARCASE_VIEWPATH</code>.</li>
-    </ul>
+    Activer cette option permet de forcer la recr&eacute;ation de la vue
+    ClearCase UCM &agrave; chaque fois qu'un nouveau build est
+    d&eacute;clench&eacute;. Si cette option n'est pas activ&eacute;e et si la
+    igne de base s&eacute;lectionn&eacute;e pour un nouveau build est la
+    m&ecirc;me que pour le pr&eacute;c&eacute;dent build, alors la vue ClearCase
+    UCM ne sera pas recr&eacute;&eacute;e.<br/>
+    Cette option peut être surcharg&eacute;e au moment du d&eacute;clenchement
+    des builds.
 </div>
