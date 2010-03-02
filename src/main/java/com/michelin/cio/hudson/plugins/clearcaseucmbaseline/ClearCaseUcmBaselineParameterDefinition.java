@@ -91,6 +91,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
      * defined, then only the corresponding folders will be downloaded.
      */
     private final String restrictions;
+    private final boolean snapshotView;
     private final String viewName;
     /**
      * We use a UUID to uniquely identify each use of this parameter: We need this
@@ -100,7 +101,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
     private final UUID uuid;
 
     @DataBoundConstructor
-    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String restrictions, String viewName, boolean forceRmview, String uuid) {
+    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String restrictions, String viewName, boolean snapshotView, boolean forceRmview, String uuid) {
         super(PARAMETER_NAME); // we keep the name of the parameter not
                                // internationalized, it will save many
                                // issues when updating system settings
@@ -109,6 +110,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         this.promotionLevel = promotionLevel;
         this.restrictions = restrictions;
         this.viewName = viewName;
+        this.snapshotView = snapshotView;
         this.forceRmview = forceRmview;
 
         if(uuid == null || uuid.length() == 0) {
@@ -130,13 +132,14 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         }
         else {
             return new ClearCaseUcmBaselineParameterValue(
-                    getName(), getPvob(), getComponent(), getPromotionLevel(), getViewName(), values[0], getForceRmview());
+                    getName(), getPvob(), getComponent(), getPromotionLevel(), getViewName(), values[0], getForceRmview(), getSnapshotView());
         }
     }
 
     // This method is invoked when the user clicks on the "Build" button of Hudon's GUI
     @Override
     public ParameterValue createValue(StaplerRequest req, JSONObject formData) {
+        // bindJSON() uses the @DataBoundConstructor constructor
         ClearCaseUcmBaselineParameterValue value = req.bindJSON(ClearCaseUcmBaselineParameterValue.class, formData);
 
         value.setPvob(pvob);
@@ -144,6 +147,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         value.setPromotionLevel(promotionLevel);
         value.setRestrictions(getRestrictionsAsList());
         value.setViewName(viewName);
+        value.setSnapshotView(snapshotView);
         // we don't set forceRmview: we use the value which is set by the user
         // (so it is in formData) to allow overriding the setting ==> the value
         // was set when invoking req.bindJSON()
@@ -244,6 +248,10 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
             }
         }
         return restrictionsAsList;
+    }
+
+    public boolean getSnapshotView() {
+        return snapshotView;
     }
 
     public String getViewName() {

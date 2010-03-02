@@ -74,14 +74,24 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
     @Exported(visibility=3) private String baseline;        // this att is set by the user once the build takes place
     @Exported(visibility=3) private String component;       // this att comes from ClearCaseUcmBaselineParameterDefinition
-    @Exported(visibility=3) private boolean forceRmview;
+    @Exported(visibility=3) private boolean forceRmview;    // this att can be overriden by the user but default value
+                                                            // comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private String promotionLevel;  // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private String pvob;            // this att comes from ClearCaseUcmBaselineParameterDefinition
-    private List<String> restrictions;
+    private List<String> restrictions;                      // this att comes from ClearCaseUcmBaselineParameterDefinition
+    @Exported(visibility=3) private boolean snapshotView;   // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private String viewName;        // this att comes from ClearCaseUcmBaselineParameterDefinition
 
+    // I have to have two constructors: If I use only one (the most complete one),
+    // I get an exception in ClearCaseUcmBaselineParameterDefinition.createValue(StaplerRequest, JSONObject)
+    // while invoking req.bindJSON()
+    // Is it because of the two booleans? No time to investigate, sorry.
     @DataBoundConstructor
-    public ClearCaseUcmBaselineParameterValue(String name, String pvob, String component, String promotionLevel, String viewName, String baseline, boolean forceRmview) {
+    public ClearCaseUcmBaselineParameterValue(String name, String baseline, boolean forceRmview) {
+        this(name, null, null, null, null, baseline, forceRmview, false);
+    }
+
+    public ClearCaseUcmBaselineParameterValue(String name, String pvob, String component, String promotionLevel, String viewName, String baseline, boolean forceRmview, boolean snapshotView) {
         super(name);
         this.pvob = ClearCaseUcmBaselineUtils.prefixWithSlash(pvob);
         this.component = component;
@@ -89,6 +99,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
         this.viewName = viewName;
         this.baseline = baseline;
         this.forceRmview = forceRmview;
+        this.snapshotView = snapshotView;
     }
 
     /**
@@ -228,7 +239,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                         // --- 2. We first create the view to be loaded ---
 
                         // cleartool mkview -tag <tag> <view path>
-                        cleartool.mkview(viewName, null);
+                        cleartool.mkview(viewName, snapshotView, null);
 
                         // --- 3. We create the configspec ---
 
@@ -374,6 +385,14 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
     public void setRestrictions(List<String> restrictions) {
         this.restrictions = restrictions;
+    }
+
+    public boolean getSnapshotView() {
+        return snapshotView;
+    }
+
+    public void setSnapshotView(boolean snapshotView) {
+        this.snapshotView = snapshotView;
     }
 
     public String getViewName() {

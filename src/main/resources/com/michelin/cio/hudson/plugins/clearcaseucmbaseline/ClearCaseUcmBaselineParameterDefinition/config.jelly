@@ -40,7 +40,14 @@
     <f:entry title="${%View name}" field="viewName">
         <f:textbox name="parameter.viewName" value="${instance.viewName}" />
     </f:entry>
+    <f:entry field="snapshotView">
+        <f:checkbox name="snapshotView"
+            checked="${instance.snapshotView}"
+            default="true"/>
+        <label class="attach-previous">${%Use snapshot view}</label>
+    </f:entry>
     <f:entry field="forceRmview">
-        <f:checkbox name="forceRmview"/><label class="attach-previous">${%Force rmview}</label>
+        <f:checkbox name="forceRmview" checked="${instance.forceRmview}"/>
+        <label class="attach-previous">${%Force rmview}</label>
     </f:entry>
 </j:jelly>

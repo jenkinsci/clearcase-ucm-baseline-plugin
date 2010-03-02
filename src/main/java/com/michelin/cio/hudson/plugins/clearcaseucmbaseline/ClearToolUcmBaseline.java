@@ -240,9 +240,16 @@ public class ClearToolUcmBaseline extends ClearToolExec {
     }
 
     public void mkview(String viewName, String streamSelector) throws IOException, InterruptedException {
+        mkview(viewName, true, null);
+    }
+
+    public void mkview(String viewName, boolean snapshotView, String streamSelector) throws IOException, InterruptedException {
         // cleartool mkview -tag <tag> <view path>
         ArgumentListBuilder cmd = new ArgumentListBuilder();
         cmd.add("mkview");
+        if(snapshotView) {
+            cmd.add("-snapshot");
+        }
         cmd.add("-tag");
         cmd.add(viewName);  // let's save user config stuff: we reuse the view name as the tag name
         cmd.add(viewName);
