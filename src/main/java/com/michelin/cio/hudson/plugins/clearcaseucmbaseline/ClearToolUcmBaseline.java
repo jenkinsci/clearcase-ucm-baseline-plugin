@@ -78,14 +78,14 @@ public class ClearToolUcmBaseline extends ClearToolExec {
      *
      * @see ftp://ftp.software.ibm.com/software/rational/docs/v2002/cc/cc_ref_1.pdf (%[component]p, page 392)
      */
-    public String getComponentFromBaseline(String vob, String baseline) throws IOException, InterruptedException {
-        String baselineSelector = baseline + '@' + vob;
+    public String getComponentFromBaseline(String pvob, String baseline) throws IOException, InterruptedException {
+        String baselineSelector = baseline + '@' + pvob;
 
         if(componentsCache.containsKey(baselineSelector)) {
             return componentsCache.get(baselineSelector);
         }
 
-        // cleartool lsbl -fmt "%[component]p" <baseline>@<vob>
+        // cleartool lsbl -fmt "%[component]p" <baseline>@<pvob>
         ArgumentListBuilder cmd = new ArgumentListBuilder();
         cmd.add("lsbl");
         cmd.add("-fmt");
@@ -118,14 +118,14 @@ public class ClearToolUcmBaseline extends ClearToolExec {
      *
      * @see ftp://ftp.software.ibm.com/software/rational/docs/v2002/cc/cc_ref_1.pdf (%[root_dir]p, page 392)
      */
-    public String getComponentRootDir(String vob, String component) throws IOException, InterruptedException {
-        String componentSelector = component + '@' + vob;
+    public String getComponentRootDir(String pvob, String component) throws IOException, InterruptedException {
+        String componentSelector = component + '@' + pvob;
 
         if(componentRootDirsCache.containsKey(componentSelector)) {
             return componentRootDirsCache.get(componentSelector);
         }
 
-        // cleartool lscomp -fmt "%[root_dir]p" <component>@<vob>
+        // cleartool lscomp -fmt "%[root_dir]p" <component>@<pvob>
         ArgumentListBuilder cmd = new ArgumentListBuilder();
         cmd.add("lscomp");
         cmd.add("-fmt");
@@ -159,8 +159,8 @@ public class ClearToolUcmBaseline extends ClearToolExec {
      *
      * @see ftp://ftp.software.ibm.com/software/rational/docs/v2002/cc/cc_ref_1.pdf (%[depends_on_closure]p, page 392)
      */
-    public String[] getDependentBaselines(String vob, String baseline) throws IOException, InterruptedException {
-        String baselineSelector = baseline + '@' + vob;
+    public String[] getDependentBaselines(String pvob, String baseline) throws IOException, InterruptedException {
+        String baselineSelector = baseline + '@' + pvob;
 
         if(dependentBaselinesCache.containsKey(baselineSelector)) {
             return dependentBaselinesCache.get(baselineSelector);

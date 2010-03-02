@@ -58,8 +58,6 @@ import org.kohsuke.stapler.export.Exported;
  * <p>This value holds the following information:
  * <li>The ClearCase UCM PVOB name (which is actually defined at config-time &mdash;
  * cf. {@link ClearCaseUcmBaselineParameterDefinition});</li>
- * <li>The ClearCase UCM VOB name (which is actually defined at config-time &mdash;
- * cf. {@link ClearCaseUcmBaselineParameterDefinition});</li>
  * <li>The ClearCase UCM component name (which is actually defined at config-time
  * &mdash; cf. {@link ClearCaseUcmBaselineParameterDefinition});</li>
  * <li>The ClearCase UCM promotion level (which is actually defined at config-time
@@ -81,13 +79,11 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     @Exported(visibility=3) private String pvob;            // this att comes from ClearCaseUcmBaselineParameterDefinition
     private List<String> restrictions;
     @Exported(visibility=3) private String viewName;        // this att comes from ClearCaseUcmBaselineParameterDefinition
-    @Exported(visibility=3) private String vob;             // this att comes from ClearCaseUcmBaselineParameterDefinition
 
     @DataBoundConstructor
-    public ClearCaseUcmBaselineParameterValue(String name, String pvob, String vob, String component, String promotionLevel, String viewName, String baseline, boolean forceRmview) {
+    public ClearCaseUcmBaselineParameterValue(String name, String pvob, String component, String promotionLevel, String viewName, String baseline, boolean forceRmview) {
         super(name);
         this.pvob = ClearCaseUcmBaselineUtils.prefixWithSlash(pvob);
-        this.vob = ClearCaseUcmBaselineUtils.prefixWithSlash(vob);
         this.component = component;
         this.promotionLevel = promotionLevel;
         this.viewName = viewName;
@@ -213,8 +209,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                         }
 
                         if(lastCcParamValue != null) {
-                            if(vob.equals(lastCcParamValue.vob)
-                                    && pvob.equals(lastCcParamValue.pvob)
+                            if(pvob.equals(lastCcParamValue.pvob)
                                     && component.equals(lastCcParamValue.component)
                                     && baseline.equals(lastCcParamValue.baseline)) {
                                 // the baseline used in the latest build is the same as the newly requested one
@@ -240,7 +235,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                         configSpec.append("element * CHECKEDOUT\n");
                         configSpec.append("element ").append(rootDir).append("/... ").append(baseline).append('\n');
 
-                        // cleartool lsbl -fmt "%[depends_on_closure]p" <baseline>@<vob>
+                        // cleartool lsbl -fmt "%[depends_on_closure]p" <baseline>@<pvob>
                         String[] dependentBaselines = cleartool.getDependentBaselines(pvob, baseline);
 
                         for(String dependentBaselineSelector: dependentBaselines) {
@@ -387,14 +382,6 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
     public void setViewName(String viewName) {
         this.viewName = viewName;
-    }
-
-    public String getVob() {
-        return vob;
-    }
-
-    public void setVob(String vob) {
-        this.vob = vob;
     }
 
 }

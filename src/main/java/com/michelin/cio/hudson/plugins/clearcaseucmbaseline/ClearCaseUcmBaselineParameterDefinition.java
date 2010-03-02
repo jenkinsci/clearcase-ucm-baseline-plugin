@@ -63,7 +63,6 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * <p>This parameter consists in a set of attributes to be set at config-time:<ul>
  * <li>The ClearCase UCM PVOB name;</li>
- * <li>The ClearCase UCM VOB name;</li>
  * <li>The ClearCase UCM component name;</li>
  * <li>The ClearCase UCM promotion level (e.g. RELEASED);</li>
  * <li>The ClearCase UCM view to create name.</li>
@@ -92,7 +91,6 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
      */
     private final String restrictions;
     private final String viewName;
-    private final String vob;
     /**
      * We use a UUID to uniquely identify each use of this parameter: We need this
      * to find the project and the node using this parameter in the getBaselines()
@@ -101,12 +99,11 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
     private final UUID uuid;
 
     @DataBoundConstructor
-    public ClearCaseUcmBaselineParameterDefinition(String pvob, String vob, String component, String promotionLevel, String restrictions, String viewName, String uuid) {
+    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String restrictions, String viewName, String uuid) {
         super(PARAMETER_NAME); // we keep the name of the parameter not
                                // internationalized, it will save many
                                // issues when updating system settings
         this.pvob = ClearCaseUcmBaselineUtils.prefixWithSlash(pvob);
-        this.vob = ClearCaseUcmBaselineUtils.prefixWithSlash(vob);
         this.component = component;
         this.promotionLevel = promotionLevel;
         this.restrictions = restrictions;
@@ -131,7 +128,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         }
         else {
             return new ClearCaseUcmBaselineParameterValue(
-                    getName(), getPvob(), getVob(), getComponent(), getPromotionLevel(), getViewName(), values[0], true);
+                    getName(), getPvob(), getComponent(), getPromotionLevel(), getViewName(), values[0], true);
         }
     }
 
@@ -141,7 +138,6 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         ClearCaseUcmBaselineParameterValue value = req.bindJSON(ClearCaseUcmBaselineParameterValue.class, formData);
 
         value.setPvob(pvob);
-        value.setVob(vob);
         value.setComponent(component);
         value.setPromotionLevel(promotionLevel);
         value.setRestrictions(getRestrictionsAsList());
@@ -244,10 +240,6 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         return viewName;
     }
 
-    public String getVob() {
-        return vob;
-    }
-
     public int compareTo(ClearCaseUcmBaselineParameterDefinition pd) {
         if(pd.uuid.equals(uuid)) {
             return 0;
@@ -285,14 +277,6 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         public FormValidation doCheckViewName(@QueryParameter String value) {
             if(value == null || value.length() == 0) {
                 return FormValidation.error(ResourceBundleHolder.get(ClearCaseUcmBaselineParameterDefinition.class).format("ViewNameMustBeSet"));
-            }
-
-            return FormValidation.ok();
-        }
-
-        public FormValidation doCheckVob(@QueryParameter String value) {
-            if(value == null || value.length() == 0) {
-                return FormValidation.error(ResourceBundleHolder.get(ClearCaseUcmBaselineParameterDefinition.class).format("VOBMustBeSet"));
             }
 
             return FormValidation.ok();

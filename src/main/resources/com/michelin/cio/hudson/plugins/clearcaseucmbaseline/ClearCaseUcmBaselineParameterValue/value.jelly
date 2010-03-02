@@ -26,9 +26,6 @@
     <f:entry title="${%PVOB}">
         <f:textbox name="pvob" value="${it.pvob}" />
     </f:entry>
-    <f:entry title="${%VOB}">
-        <f:textbox name="vob" value="${it.vob}" />
-    </f:entry>
     <f:entry title="${%Component}">
         <f:textbox name="component" value="${it.component}" />
     </f:entry>
