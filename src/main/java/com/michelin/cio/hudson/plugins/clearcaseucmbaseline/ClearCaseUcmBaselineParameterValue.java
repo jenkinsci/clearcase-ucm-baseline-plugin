@@ -32,6 +32,7 @@ import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
+import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
@@ -41,8 +42,12 @@ import hudson.plugins.clearcase.AbstractClearCaseScm;
 import hudson.plugins.clearcase.ClearToolLauncher;
 import hudson.plugins.clearcase.HudsonClearToolLauncher;
 import hudson.plugins.clearcase.PluginImpl;
+import hudson.plugins.clearcase.ucm.UcmMakeBaseline;
+import hudson.plugins.clearcase.ucm.UcmMakeBaselineComposite;
 import hudson.plugins.clearcase.util.BuildVariableResolver;
 import hudson.tasks.BuildWrapper;
+import hudson.tasks.Publisher;
+import hudson.util.DescribableList;
 import hudson.util.VariableResolver;
 import java.io.File;
 import java.io.IOException;
@@ -82,6 +87,8 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     @Exported(visibility=3) private boolean snapshotView;   // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private String viewName;        // this att comes from ClearCaseUcmBaselineParameterDefinition
 
+    private StringBuffer fatalErrorMessage = new StringBuffer();
+
     // I have to have two constructors: If I use only one (the most complete one),
     // I get an exception in ClearCaseUcmBaselineParameterDefinition.createValue(StaplerRequest, JSONObject)
     // while invoking req.bindJSON()
@@ -114,14 +121,37 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     public BuildWrapper createBuildWrapper(AbstractBuild<?, ?> build) {
         // let's ensure that a baseline has been really provided
         if(baseline == null || baseline.length() == 0) {
+            fatalErrorMessage.append("The value '" + baseline + "' is not a valid ClearCase UCM baseline.");
+        }
+
+        // HUDSON-5877: let's ensure the job has no publishers/notifiers coming
+        // from the ClearCase plugin
+        DescribableList<Publisher, Descriptor<Publisher>> publishersList = build.getProject().getPublishersList();
+        if(publishersList.contains(UcmMakeBaseline.DESCRIPTOR)) {
+            if(fatalErrorMessage.length() > 0) {
+                fatalErrorMessage.append('\n');
+            }
+            fatalErrorMessage.append("This job is set up to use a '")
+                    .append(UcmMakeBaseline.DESCRIPTOR.getDisplayName())
+                    .append("' publisher which is not compatible with the ClearCase UCM baseline SCM mode. Please remove this publisher.");
+        }
+        if(publishersList.contains(UcmMakeBaselineComposite.DESCRIPTOR)) {
+            if(fatalErrorMessage.length() > 0) {
+                fatalErrorMessage.append('\n');
+            }
+            fatalErrorMessage.append("This job is set up to use a '")
+                    .append(UcmMakeBaselineComposite.DESCRIPTOR.getDisplayName())
+                    .append("' publisher which is not compatible with the ClearCase UCM baseline SCM mode. Please remove this publisher.");
+        }
+
+        if(fatalErrorMessage.length() > 0) {
             return new BuildWrapper() {
                 /**
-                 * This method makes the build fail when baseline value is {@code
-                 * null} or empty.
+                 * This method just makes the build fail for various reasons.
                  */
                 @Override
                 public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-                    listener.fatalError("The value '" + baseline + "' is not a valid ClearCase UCM baseline.");
+                    listener.fatalError(fatalErrorMessage.toString());
                     return null;
                 }
             };
