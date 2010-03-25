@@ -42,6 +42,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -207,16 +210,51 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
             }
         }
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        nodeRunningThisJob.createLauncher(TaskListener.NULL).launch().cmds(cmd).stdout(baos).join();
-        String cleartoolOutput = ClearCaseUcmBaselineUtils.processCleartoolOuput(baos);
-        baos.close();
+        // HUDSON-6057: we have to start the node if it's offline
+        Computer computerRunnningThisJob = nodeRunningThisJob.toComputer();
+        if(computerRunnningThisJob.isOffline()) {
+            if(computerRunnningThisJob.isLaunchSupported()) {
+                LOGGER.info(nodeRunningThisJob.getDisplayName() + " is offline. Trying to launch it...");
 
-        if(cleartoolOutput.toString().contains("cleartool: Error")) {
-            return null;
+                try {
+                    computerRunnningThisJob.connect(false).get();
+
+                    LOGGER.info("Waiting 10 seconds for " + nodeRunningThisJob.getDisplayName() + " to be launched...");
+                    Thread.sleep(10000);
+
+                    do {
+                        Thread.sleep(1000);
+                    } while(computerRunnningThisJob.isConnecting());
+                } catch(Exception e) {
+                    LOGGER.log(Level.SEVERE, "An exception occurred while launching " + nodeRunningThisJob.getDisplayName(), e);
+                    return null;
+                }
+            }
+            else {
+                LOGGER.severe(nodeRunningThisJob.getDisplayName() + " can't be automatically launched. You must start it before trying to run this job.");
+                return null;
+            }
+        }
+
+        if(computerRunnningThisJob.isOnline()) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            nodeRunningThisJob.createLauncher(TaskListener.NULL).launch().cmds(cmd).stdout(baos).join();
+            String cleartoolOutput = ClearCaseUcmBaselineUtils.processCleartoolOuput(baos);
+            baos.close();
+
+            if(cleartoolOutput.toString().contains("cleartool: Error")) {
+                LOGGER.warning("An error occurred while gathering ClearCase UCM baselines: " + cleartoolOutput);
+                return null;
+            }
+            else {
+                return cleartoolOutput.toString().split(" ");
+            }
         }
         else {
-            return cleartoolOutput.toString().split(" ");
+            LOGGER.log(
+                    Level.SEVERE,
+                    nodeRunningThisJob.getDisplayName() + " is offline and couldn't be launched.");
+            return null;
         }
     }
 
@@ -306,5 +344,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         }
 
     }
+
+    private final static Logger LOGGER = Logger.getLogger(ClearCaseUcmBaselineParameterDefinition.class.getName());
 
 }
