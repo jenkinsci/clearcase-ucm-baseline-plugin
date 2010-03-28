@@ -1,7 +1,8 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+ * Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy,
+ *                     Vincent Latombe
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +43,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
@@ -108,7 +108,9 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         super(PARAMETER_NAME); // we keep the name of the parameter not
                                // internationalized, it will save many
                                // issues when updating system settings
-        this.pvob = ClearCaseUcmBaselineUtils.prefixWithSlash(pvob);
+        // pvob should be prefixed with slave OS separator but at this stage, we
+        // can't determine it.
+        this.pvob = ClearCaseUcmBaselineUtils.prefixWithSeparator(pvob);
         this.component = component;
         this.promotionLevel = promotionLevel;
         this.restrictions = restrictions;

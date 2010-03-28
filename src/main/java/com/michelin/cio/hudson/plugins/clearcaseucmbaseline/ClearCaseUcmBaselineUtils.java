@@ -2,6 +2,7 @@
  * The MIT License
  *
  * Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+ *                     Vincent Latombe
  * Copyright (c) 2007-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
  *                          Henrik Lynggaard, Peter Liljenberg, Andrew Bayer
  *
@@ -29,6 +30,7 @@ package com.michelin.cio.hudson.plugins.clearcaseucmbaseline;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -37,12 +39,12 @@ import java.io.InputStreamReader;
  */
 public class ClearCaseUcmBaselineUtils {
 
-    public static String prefixWithSlash(final String s) {
-        if(s != null && s.length() > 0 && s.startsWith("\\")) {
-            return '/' + s.substring(1);
-        }
-        if(s != null && s.length() > 0 && !s.startsWith("/")) {
-            return '/' + s;
+    public static String prefixWithSeparator(final String s) {
+        if(s != null && s.length() > 0) {
+            char firstCharacter = s.charAt(0);
+            if(firstCharacter != '\\' && firstCharacter != '/') {
+                return File.separatorChar + s;
+            }
         }
         return s;
     }
