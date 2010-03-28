@@ -1,7 +1,8 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+ * Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy,
+ *                     Vincent Latombe
  * Copyright (c) 2007-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
  *                          Henrik Lynggaard, Peter Liljenberg, Andrew Bayer
  *
@@ -127,23 +128,15 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
         // HUDSON-5877: let's ensure the job has no publishers/notifiers coming
         // from the ClearCase plugin
         DescribableList<Publisher, Descriptor<Publisher>> publishersList = build.getProject().getPublishersList();
-        if(publishersList.contains(UcmMakeBaseline.DESCRIPTOR)) {
-            if(fatalErrorMessage.length() > 0) {
-                fatalErrorMessage.append('\n');
+        for(Publisher publisher : publishersList) {
+            if(publisher instanceof UcmMakeBaseline || publisher instanceof UcmMakeBaselineComposite) {
+                if(fatalErrorMessage.length() > 0) {
+                    fatalErrorMessage.append('\n');
+                }
+                fatalErrorMessage.append("This job is set up to use a '").append(publisher.getDescriptor().getDisplayName()).append(
+                        "' publisher which is not compatible with the ClearCase UCM baseline SCM mode. Please remove this publisher.");
             }
-            fatalErrorMessage.append("This job is set up to use a '")
-                    .append(UcmMakeBaseline.DESCRIPTOR.getDisplayName())
-                    .append("' publisher which is not compatible with the ClearCase UCM baseline SCM mode. Please remove this publisher.");
         }
-        if(publishersList.contains(UcmMakeBaselineComposite.DESCRIPTOR)) {
-            if(fatalErrorMessage.length() > 0) {
-                fatalErrorMessage.append('\n');
-            }
-            fatalErrorMessage.append("This job is set up to use a '")
-                    .append(UcmMakeBaselineComposite.DESCRIPTOR.getDisplayName())
-                    .append("' publisher which is not compatible with the ClearCase UCM baseline SCM mode. Please remove this publisher.");
-        }
-
         if(fatalErrorMessage.length() > 0) {
             return new BuildWrapper() {
                 /**
@@ -191,7 +184,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                  * button appearing on the parameters page.</p>
                  */
                 @Override
-                public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+                public Environment setUp(AbstractBuild build, final Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
                     VariableResolver variableResolver = null;
                     try {
                         // this plugin is built against ClearCase plugin 1.0...
@@ -341,8 +334,17 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                                     baseline);
                             env.put(AbstractClearCaseScm.CLEARCASE_VIEWNAME_ENVSTR,
                                     viewName);
+
+                            // as usually, some quick & dirty code to convert / to \ (or the contrary)
+                            String ccViewPath = env.get("WORKSPACE") + File.separator + viewName;
+                            char replaceThis = '/';
+                            char replaceBy = '\\';
+                            if(launcher.isUnix()) {
+                               replaceThis = '\\';
+                               replaceBy = '/';
+                            }
                             env.put(AbstractClearCaseScm.CLEARCASE_VIEWPATH_ENVSTR,
-                                    env.get("WORKSPACE") + File.separator + viewName);
+                                    ccViewPath.replace(replaceThis, replaceBy));
                         }
                     };
                 }
