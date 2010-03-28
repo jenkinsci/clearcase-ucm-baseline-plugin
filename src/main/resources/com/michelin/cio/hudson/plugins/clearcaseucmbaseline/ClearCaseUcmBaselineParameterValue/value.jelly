@@ -41,6 +41,9 @@
     <f:entry title="${%Snaphot view}">
         <f:textbox name="snapshotView" value="${it.snapshotView}"/>
     </f:entry>
+    <f:entry title="${%Use update}">
+        <f:textbox name="useUpdate" value="${it.useUpdate}"/>
+    </f:entry>
     <f:entry title="${%Force rmview}">
         <f:textbox name="forceRmview" value="${it.forceRmview}"/>
     </f:entry>

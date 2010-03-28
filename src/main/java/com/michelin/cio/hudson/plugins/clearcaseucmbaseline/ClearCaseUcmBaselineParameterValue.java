@@ -86,6 +86,8 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     @Exported(visibility=3) private String pvob;            // this att comes from ClearCaseUcmBaselineParameterDefinition
     private List<String> restrictions;                      // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private boolean snapshotView;   // this att comes from ClearCaseUcmBaselineParameterDefinition
+    @Exported(visibility=3) private String stream;          // this att comes from ClearCaseUcmBaselineParameterDefinition
+    @Exported(visibility=3) private boolean useUpdate;      // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private String viewName;        // this att comes from ClearCaseUcmBaselineParameterDefinition
 
     private StringBuffer fatalErrorMessage = new StringBuffer();
@@ -96,16 +98,21 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     // Is it because of the two booleans? No time to investigate, sorry.
     @DataBoundConstructor
     public ClearCaseUcmBaselineParameterValue(String name, String baseline, boolean forceRmview) {
-        this(name, null, null, null, null, baseline, forceRmview, false);
+        this(name, null, null, null, null, null, baseline, false, forceRmview, false);
     }
 
-    public ClearCaseUcmBaselineParameterValue(String name, String pvob, String component, String promotionLevel, String viewName, String baseline, boolean forceRmview, boolean snapshotView) {
+    public ClearCaseUcmBaselineParameterValue(
+            String name, String pvob, String component, String promotionLevel,
+            String stream, String viewName, String baseline,
+            boolean useUpdate, boolean forceRmview, boolean snapshotView) {
         super(name);
         this.pvob = ClearCaseUcmBaselineUtils.prefixWithSeparator(pvob);
         this.component = component;
         this.promotionLevel = promotionLevel;
+        this.stream = stream;
         this.viewName = viewName;
         this.baseline = baseline;
+        this.useUpdate = useUpdate;
         this.forceRmview = forceRmview;
         this.snapshotView = snapshotView;
     }
@@ -261,13 +268,17 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                         // --- 1. We remove the view if it already exists ---
 
                         if(viewPath.exists()) {
-                            cleartool.rmview(viewName);
+                            if(!useUpdate || forceRmview) {
+                                cleartool.rmview(viewName);
+
+                                // --- 2. We create the view to be loaded ---
+
+                                // cleartool mkview -tag <tag> <view path>
+                                cleartool.mkview(viewName, snapshotView, null);
+                            }
+                        } else {
+                            cleartool.mkview(viewName, snapshotView, null);
                         }
-
-                        // --- 2. We first create the view to be loaded ---
-
-                        // cleartool mkview -tag <tag> <view path>
-                        cleartool.mkview(viewName, snapshotView, null);
 
                         // --- 3. We create the configspec ---
 
@@ -411,6 +422,22 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
     public void setSnapshotView(boolean snapshotView) {
         this.snapshotView = snapshotView;
+    }
+
+    public String getStream() {
+        return stream;
+    }
+
+    public void setStream(String stream) {
+        this.stream = stream;
+    }
+
+    public boolean getUseUpdate() {
+        return useUpdate;
+    }
+
+    public void setUseUpdate(boolean useUpdate) {
+        this.useUpdate = useUpdate;
     }
 
     public String getViewName() {

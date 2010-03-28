@@ -1,7 +1,8 @@
 <!--
   - The MIT License
   -
-  - Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+  - Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy,
+  -                     Vincent Latombe
   -
   - Permission is hereby granted, free of charge, to any person obtaining a copy
   - of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +33,10 @@
     <f:entry title="${%Promotion level}" field="promotionLevel">
         <f:textbox name="parameter.promotionLevel" value="${instance.promotionLevel}" />
     </f:entry>
-    <f:entry title="${%Restric folders to}" field="restrictions">
+    <f:entry title="${%Stream}" field="stream">
+        <f:textbox name="parameter.stream" value="${instance.stream}" />
+    </f:entry>
+    <f:entry title="${%Restrict folders to}" field="restrictions">
         <f:expandableTextbox
             name="parameter.restrictions"
             value="${instance.restrictions}" />
@@ -45,6 +49,10 @@
             checked="${instance.snapshotView}"
             default="true"/>
         <label class="attach-previous">${%Use snapshot view}</label>
+    </f:entry>
+    <f:entry field="useUpdate">
+        <f:checkbox name="useUpdate" checked="${instance.useUpdate}"/>
+        <label class="attach-previous">${%Use update}</label>
     </f:entry>
     <f:entry field="forceRmview">
         <f:checkbox name="forceRmview" checked="${instance.forceRmview}"/>

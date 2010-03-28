@@ -46,6 +46,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -68,6 +69,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * <li>The ClearCase UCM PVOB name;</li>
  * <li>The ClearCase UCM component name;</li>
  * <li>The ClearCase UCM promotion level (e.g. RELEASED);</li>
+ * <li>The ClearCase UCM stream;</li>
  * <li>The ClearCase UCM view to create name.</li>
  * </ul></p>
  * <p>The following attribute is then asked at run-time:<ul>
@@ -95,6 +97,12 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
      */
     private final String restrictions;
     private final boolean snapshotView;
+    /**
+     * The stream is optional: If not set, the user will be proposed with all
+     * baselines from the Clearcase UCM component.
+     */
+    private final String stream;
+    private final boolean useUpdate;
     private final String viewName;
     /**
      * We use a UUID to uniquely identify each use of this parameter: We need this
@@ -104,7 +112,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
     private final UUID uuid;
 
     @DataBoundConstructor
-    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String restrictions, String viewName, boolean snapshotView, boolean forceRmview, String uuid) {
+    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String stream, String restrictions, String viewName, boolean snapshotView, boolean useUpdate, boolean forceRmview, String uuid) {
         super(PARAMETER_NAME); // we keep the name of the parameter not
                                // internationalized, it will save many
                                // issues when updating system settings
@@ -113,9 +121,11 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         this.pvob = ClearCaseUcmBaselineUtils.prefixWithSeparator(pvob);
         this.component = component;
         this.promotionLevel = promotionLevel;
+        this.stream = stream;
         this.restrictions = restrictions;
         this.viewName = viewName;
         this.snapshotView = snapshotView;
+        this.useUpdate = useUpdate;
         this.forceRmview = forceRmview;
 
         if(uuid == null || uuid.length() == 0) {
@@ -137,7 +147,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         }
         else {
             return new ClearCaseUcmBaselineParameterValue(
-                    getName(), getPvob(), getComponent(), getPromotionLevel(), getViewName(), values[0], getForceRmview(), getSnapshotView());
+                    getName(), getPvob(), getComponent(), getPromotionLevel(), getStream(), getViewName(), values[0], getUseUpdate(), getForceRmview(), getSnapshotView());
         }
     }
 
@@ -153,6 +163,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         value.setRestrictions(getRestrictionsAsList());
         value.setViewName(viewName);
         value.setSnapshotView(snapshotView);
+        value.setUseUpdate(useUpdate);
         // we don't set forceRmview: we use the value which is set by the user
         // (so it is in formData) to allow overriding the setting ==> the value
         // was set when invoking req.bindJSON()
@@ -167,17 +178,21 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
      * if something wrong happens).
      */
     public String[] getBaselines() throws IOException, InterruptedException {
-        // cleartool lsbl -fmt "%[name]p " -level <promotion level> -component <component>@<vob>
+        // cleartool lsbl -fmt "%[name]p " -level <promotion level> -stream <stream>@<pvob> -component <component>@<vob>
         ArgumentListBuilder cmd = new ArgumentListBuilder();
         cmd.add(PluginImpl.getDescriptor().getCleartoolExe());
         cmd.add("lsbl");
         cmd.add("-fmt");
         cmd.add("%[name]p ");
-        if(promotionLevel != null && promotionLevel.length() > 0) {
+        if(StringUtils.isNotEmpty(promotionLevel)) {
             cmd.add("-level");
             cmd.add(promotionLevel);
         }
-        cmd.add("-component");
+        if(StringUtils.isNotEmpty(stream)) {
+            cmd.add("-stream");
+            cmd.add(stream + '@' + pvob);
+        }
+         cmd.add("-component");
         cmd.add(component + '@' + pvob);
 
         // we have to find the node the job is assigned to so that we run the
@@ -294,6 +309,14 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         return snapshotView;
     }
 
+    public String getStream() {
+        return stream;
+    }
+
+    public boolean getUseUpdate() {
+        return useUpdate;
+    }
+
     public String getViewName() {
         return viewName;
     }
@@ -327,6 +350,14 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         public FormValidation doCheckPvob(@QueryParameter String value) {
             if(value == null || value.length() == 0) {
                 return FormValidation.error(ResourceBundleHolder.get(ClearCaseUcmBaselineParameterDefinition.class).format("PVOBMustBeSet"));
+            }
+
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckStream(@QueryParameter String value) {
+            if(StringUtils.isEmpty(value)) {
+                return FormValidation.warning(ResourceBundleHolder.get(ClearCaseUcmBaselineParameterDefinition.class).format("StreamShouldBeSet"));
             }
 
             return FormValidation.ok();
