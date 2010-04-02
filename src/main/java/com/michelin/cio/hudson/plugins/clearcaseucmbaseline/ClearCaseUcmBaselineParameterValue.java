@@ -54,6 +54,9 @@ import hudson.util.VariableResolver;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
@@ -289,32 +292,48 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                         // cleartool lsbl -fmt "%[depends_on_closure]p" <baseline>@<pvob>
                         String[] dependentBaselines = cleartool.getDependentBaselines(pvob, baseline);
 
+                        // we add the selected baseline at the beginning of the dependentBaselines
+                        // array so that the "element" and "load" sections of the config spec are
+                        // generated for this baseline
+                        dependentBaselines = (String[]) ArrayUtils.add(dependentBaselines, 0, baseline + '@' + pvob);
+
                         for(String dependentBaselineSelector: dependentBaselines) {
                             int indexOfSeparator = dependentBaselineSelector.indexOf('@');
                             if(indexOfSeparator == -1) {
+                                if(LOGGER.isLoggable(Level.INFO)) {
+                                    LOGGER.info("Ignoring dependent baseline '" + dependentBaselineSelector + '\'');
+                                }
                                 continue;
                             }
+
                             String dependentBaseline = dependentBaselineSelector.substring(0, indexOfSeparator);
                             String component = cleartool.getComponentFromBaseline(pvob, dependentBaseline);
-                            rootDir = cleartool.getComponentRootDir(pvob, component);
+                            String componentRootDir = cleartool.getComponentRootDir(pvob, component);
 
-                            configSpec.append("element \"").append(rootDir).append(fileSepForOS + "...\" ").append(dependentBaseline).append(" -nocheckout").append(newlineForOS);
+                            // example of generated config spec "element":
+                            // element /xxx/spd_comp/... spd_comp_v1.x_20100402100000 -nocheckout
+                            configSpec.append("element \"").append(componentRootDir).append(fileSepForOS).append("...\" ").append(dependentBaseline).append(" -nocheckout").append(newlineForOS);
                             // is any download restriction defined?
                             if(restrictions != null && restrictions.size() > 0) {
                                 for(String restriction: restrictions) {
-                                    if(restriction.startsWith(rootDir)) {
+                                    // the comparison must not take into account path separators,
+                                    // so let's unify them to / for that purpose
+                                    String restrictionForComparison = restriction.replace('\\', '/');
+                                    String componentRootDirForComparison = componentRootDir.replace('\\', '/');
+                                    if(restrictionForComparison.startsWith(componentRootDirForComparison)) {
+                                        // example of generated config spec "load":
+                                        // load /xxx/spd_comp/src
                                         loadRules.append("load ").append(restriction).append(newlineForOS);
                                     }
                                 }
                             }
                             else {
-                                loadRules.append("load ").append(rootDir).append(newlineForOS);
+                                loadRules.append("load ").append(componentRootDir).append(newlineForOS);
                             }
                         }
-                        configSpec.append(newlineForOS);
+
                         configSpec.append("element * /main/0 -ucm -nocheckout").append(newlineForOS);
-                        configSpec.append(newlineForOS);
-                        configSpec.append(loadRules).append(newlineForOS);
+                        configSpec.append(loadRules);
 
                         listener.getLogger().println("The view will be created based on the following config spec:");
                         listener.getLogger().println("--- config spec start ---");
@@ -324,7 +343,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                         // --- 4. We actually load the view based on the configspec ---
 
                         // cleartool setcs <configspec>
-                        //cleartool.setcs(viewName, configSpec.toString());
+                        cleartool.setcs(viewName, configSpec.toString());
                     }
                     else {
                         listener.getLogger().println("The requested ClearCase UCM baseline is the same as previous build: Reusing previously loaded view");
@@ -447,5 +466,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     public void setViewName(String viewName) {
         this.viewName = viewName;
     }
+
+    private final static Logger LOGGER = Logger.getLogger(ClearCaseUcmBaselineParameterValue.class.getName());
 
 }
