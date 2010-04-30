@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Map;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * This class defines the cleartool command for use by
@@ -114,6 +115,8 @@ public class ClearToolUcmBaseline extends ClearToolExec {
     /**
      * Returns, for a given ClearCase UCM component, its root dir.
      *
+     * <p>Note that in case the component is rootless, an empty string is
+     * returned (cf. HUDSON-6398).</p>
      * <p>The root dirs are cached for each instance of the class.</p>
      *
      * @see ftp://ftp.software.ibm.com/software/rational/docs/v2002/cc/cc_ref_1.pdf (%[root_dir]p, page 392)
@@ -138,17 +141,18 @@ public class ClearToolUcmBaseline extends ClearToolExec {
         baos.close();
 
         // ensure no error has occured
-        if(cleartoolOutput.contains("cleartool: Error")) {
+        if(cleartoolOutput != null && cleartoolOutput.contains("cleartool: Error")) {
             launcher.getListener().error("Failed to get root dir of the component " + componentSelector + ".");
             throw new IOException("Failed to get the root dir of the component " + componentSelector + ": " + cleartoolOutput);
         }
 
         // no error ==> it means the cleartool ouput just contains the root dir
+        // or an empty string if the component is rootless -- cf. HUDSON-6398
 
         // caching
         componentRootDirsCache.put(componentSelector, cleartoolOutput);
 
-        return cleartoolOutput;
+        return cleartoolOutput != null ? cleartoolOutput.trim() : StringUtils.EMPTY;
     }
 
     /**

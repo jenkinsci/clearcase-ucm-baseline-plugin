@@ -52,11 +52,14 @@ import hudson.tasks.Publisher;
 import hudson.util.DescribableList;
 import hudson.util.VariableResolver;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
@@ -216,7 +219,6 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
                     FilePath workspace = build.getProject().getWorkspace();
                     FilePath viewPath = workspace.child(viewName);
-                    String rootDir = cleartool.getComponentRootDir(pvob, component);
                     StringBuilder configSpec = new StringBuilder();
 
                     // --- 0. Has the same baseline been retrieved during last execution? ---
@@ -287,7 +289,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
                         configSpec.append("element * CHECKEDOUT").append(newlineForOS);
 
-                        StringBuilder loadRules = new StringBuilder();
+                        Set<String> loadRules = new HashSet<String>(); // we use a Set to avoid duplicate load rules (cf. HUDSON-6398)
 
                         // cleartool lsbl -fmt "%[depends_on_closure]p" <baseline>@<pvob>
                         String[] dependentBaselines = cleartool.getDependentBaselines(pvob, baseline);
@@ -310,6 +312,11 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                             String component = cleartool.getComponentFromBaseline(pvob, dependentBaseline);
                             String componentRootDir = cleartool.getComponentRootDir(pvob, component);
 
+                            // some components may be rootless: they must simply be skipped (cf. HUDSON-6398)
+                            if(StringUtils.isBlank(componentRootDir)) {
+                                continue;
+                            }
+
                             // example of generated config spec "element":
                             // element /xxx/spd_comp/... spd_comp_v1.x_20100402100000 -nocheckout
                             configSpec.append("element \"").append(componentRootDir).append(fileSepForOS).append("...\" ").append(dependentBaseline).append(" -nocheckout").append(newlineForOS);
@@ -323,17 +330,19 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                                     if(restrictionForComparison.startsWith(componentRootDirForComparison)) {
                                         // example of generated config spec "load":
                                         // load /xxx/spd_comp/src
-                                        loadRules.append("load ").append(restriction).append(newlineForOS);
+                                        loadRules.add("load " + restriction);
                                     }
                                 }
                             }
                             else {
-                                loadRules.append("load ").append(componentRootDir).append(newlineForOS);
+                                loadRules.add("load " + componentRootDir);
                             }
                         }
 
                         configSpec.append("element * /main/0 -ucm -nocheckout").append(newlineForOS);
-                        configSpec.append(loadRules);
+                        for(String loadRule: loadRules) {
+                            configSpec.append(loadRule).append(newlineForOS);
+                        }
 
                         listener.getLogger().println("The view will be created based on the following config spec:");
                         listener.getLogger().println("--- config spec start ---");
