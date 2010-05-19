@@ -32,7 +32,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.ParameterValue;
@@ -45,7 +44,6 @@ import hudson.plugins.clearcase.HudsonClearToolLauncher;
 import hudson.plugins.clearcase.PluginImpl;
 import hudson.plugins.clearcase.ucm.UcmMakeBaseline;
 import hudson.plugins.clearcase.ucm.UcmMakeBaselineComposite;
-import hudson.plugins.clearcase.util.BuildVariableResolver;
 import hudson.plugins.clearcase.util.PathUtil;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
@@ -80,7 +78,7 @@ import org.kohsuke.stapler.export.Exported;
  * asked at build-time)</li>
  * </ul></p>
  *
- * @author Romain Seguy (http://davadoc.deviantart.com)
+ * @author Romain Seguy (http://openromain.blogspot.com)
  */
 public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
@@ -198,19 +196,9 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                  */
                 @Override
                 public Environment setUp(AbstractBuild build, final Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-                    VariableResolver variableResolver = null;
-                    try {
-                        // this plugin is built against ClearCase plugin 1.0...
-                        variableResolver = new BuildVariableResolver(build, launcher);
-                    }
-                    catch(NoSuchMethodError nsme) {
-                        // ...but it is also upward compatible with ClearCase plugin 1.1
-                        try {
-                            variableResolver = (VariableResolver) BuildVariableResolver.class.getConstructors()[0].newInstance(build, Computer.currentComputer());
-                        } catch(Exception e) {
-                            listener.fatalError("No variable resolver has been instantiated: The build will surely crash, but let's make a try...");
-                        }
-                    }
+                    // we use our own variable resolver to have the support for
+                    // the CLEARCASE_BASELINE env variable (cf. HUDSON-6410)
+                    VariableResolver variableResolver = new BuildVariableResolver(build, launcher, listener, baseline);
 
                     ClearToolLauncher clearToolLauncher = createClearToolLauncher(listener, build.getProject().getWorkspace(), launcher);
                     ClearToolUcmBaseline cleartool = new ClearToolUcmBaseline(variableResolver, clearToolLauncher);

@@ -26,10 +26,14 @@
     <b>Obligatoire</b> &mdash; Nom de la vue ClearCase UCM qui sera
     cr&acute;&acute; pour  permettre le t&acute;l&acute;chargement de la ligne
     de base ClearCase UCM s&acute;lectionn&acute;e lors d'un build.<br/>
-    Il est possible d'utiliser deux variables pour construire le nom de la vue:<ul>
-    <li><code>JOB_NAME</code> sera remplac&eacute; par le nom du job ;</li>
-    <li><code>USER_NAME</code> sera remplac&eacute; par le nom de l'utilisateur
-        avec lequel Hudson s'ex&eacute;cute.</li>
+    Il est possible d'utiliser certaines variables pour construire le nom de la
+    vue, par exemple:<ul>
+    <li><code>CLEARCASE_BASELINE</code>, qui sera remplac&eacute; par le nom de
+        la ligne de base ClearCase UCM s&eacute;lectionn&eacute;e au
+        d&eacute;marrage d'un build ;</li>
+    <li><code>JOB_NAME</code>, qui sera remplac&eacute; par le nom du job ;</li>
+    <li><code>USER_NAME</code>, qui sera remplac&eacute; par le nom de
+        l'utilisateur avec lequel Hudson s'ex&eacute;cute.</li>
     </ul>
     Il est possible d'acc&acute;der &agrave; cette vue en utilisant l'une des
     deux variables d'environnement ci-dessous:<ul>

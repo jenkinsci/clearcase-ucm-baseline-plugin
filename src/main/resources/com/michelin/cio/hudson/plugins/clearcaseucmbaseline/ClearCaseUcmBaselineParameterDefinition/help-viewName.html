@@ -25,10 +25,12 @@
 <div>
     <b>Mandatory</b> &mdash; Name of the ClearCase UCM view which will be
     created to download the content of the baseline selected at build-time.<br/>
-    You can use two variables within the view name:<ul>
-    <li><code>JOB_NAME</code> is replaced with the name of the job;</li>
-    <li><code>USER_NAME</code> is replaced with the name of the user running
-        Hudson.</li>
+    You can use several variables within the view name, such as:<ul>
+    <li><code>CLEARCASE_BASELINE</code>, which is replaced with the name of the
+        ClearCase UCM baseline which is selected at build-time;</li>
+    <li><code>JOB_NAME</code>, which is replaced with the name of the job;</li>
+    <li><code>USER_NAME</code>, which is replaced with the name of the user
+        running Hudson.</li>
     </ul>
     The ClearCase UCM view is available as two environment variables:<ul>
     <li>The name of the ClearCase UCM view is available as
