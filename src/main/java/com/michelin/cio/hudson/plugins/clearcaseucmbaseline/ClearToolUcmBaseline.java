@@ -27,6 +27,7 @@
 package com.michelin.cio.hudson.plugins.clearcaseucmbaseline;
 
 import hudson.FilePath;
+import hudson.Util;
 import hudson.plugins.clearcase.ClearToolExec;
 import hudson.plugins.clearcase.ClearToolLauncher;
 import hudson.plugins.clearcase.util.PathUtil;
@@ -37,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Random;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -244,11 +246,11 @@ public class ClearToolUcmBaseline extends ClearToolExec {
     }
 
     public void mkview(String viewName, String streamSelector) throws IOException, InterruptedException {
-        mkview(viewName, true, null);
+        mkview(viewName, null, true, null);
     }
 
-    public void mkview(String viewName, boolean snapshotView, String streamSelector) throws IOException, InterruptedException {
-        // cleartool mkview -tag <tag> <view path>
+    public void mkview(String viewName, String mkviewOptionalParam, boolean snapshotView, String streamSelector) throws IOException, InterruptedException {
+        // cleartool mkview -tag <tag> <view path> <optional parameters>
         ArgumentListBuilder cmd = new ArgumentListBuilder();
         cmd.add("mkview");
         if(snapshotView) {
@@ -256,6 +258,12 @@ public class ClearToolUcmBaseline extends ClearToolExec {
         }
         cmd.add("-tag");
         cmd.add(viewName);  // let's save user config stuff: we reuse the view name as the tag name
+
+        // HUDSON-6409
+        if(StringUtils.isNotBlank(mkviewOptionalParam)) {
+            cmd.addTokenized(Util.replaceMacro(mkviewOptionalParam, variableResolver));
+        }
+
         cmd.add(viewName);
 
         // run the cleartool command
@@ -272,7 +280,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
     }
 
     // ClearCase plugin 1.1 upward compatibility
-    public void mkview(String string, String string1, String string2) throws IOException, InterruptedException {
+    public void mkview(String viewName, String streamSelector, String defaultStorageDir) throws IOException, InterruptedException {
         unsupportedMethod(Thread.currentThread().getStackTrace()[0]);
     }
 

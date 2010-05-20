@@ -86,6 +86,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     @Exported(visibility=3) private String component;       // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private boolean forceRmview;    // this att can be overriden by the user but default value
                                                             // comes from ClearCaseUcmBaselineParameterDefinition
+    private String mkviewOptionalParam;                     // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private String promotionLevel;  // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private String pvob;            // this att comes from ClearCaseUcmBaselineParameterDefinition
     private List<String> restrictions;                      // this att comes from ClearCaseUcmBaselineParameterDefinition
@@ -102,12 +103,12 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     // Is it because of the two booleans? No time to investigate, sorry.
     @DataBoundConstructor
     public ClearCaseUcmBaselineParameterValue(String name, String baseline, boolean forceRmview) {
-        this(name, null, null, null, null, null, baseline, false, forceRmview, false);
+        this(name, null, null, null, null, null, null, baseline, false, forceRmview, false);
     }
 
     public ClearCaseUcmBaselineParameterValue(
             String name, String pvob, String component, String promotionLevel,
-            String stream, String viewName, String baseline,
+            String stream, String viewName, String mkviewOptionalParam, String baseline,
             boolean useUpdate, boolean forceRmview, boolean snapshotView) {
         super(name);
         this.pvob = ClearCaseUcmBaselineUtils.prefixWithSeparator(pvob);
@@ -115,6 +116,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
         this.promotionLevel = promotionLevel;
         this.stream = stream;
         this.viewName = viewName;
+        this.mkviewOptionalParam = mkviewOptionalParam;
         this.baseline = baseline;
         this.useUpdate = useUpdate;
         this.forceRmview = forceRmview;
@@ -267,10 +269,10 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                                 // --- 2. We create the view to be loaded ---
 
                                 // cleartool mkview -tag <tag> <view path>
-                                cleartool.mkview(viewName, snapshotView, null);
+                                cleartool.mkview(viewName, mkviewOptionalParam, snapshotView, null);
                             }
                         } else {
-                            cleartool.mkview(viewName, snapshotView, null);
+                            cleartool.mkview(viewName, mkviewOptionalParam, snapshotView, null);
                         }
 
                         // --- 3. We create the configspec ---
@@ -410,6 +412,14 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
     public void setForceRmview(boolean forceRmview) {
         this.forceRmview = forceRmview;
+    }
+
+    public String getMkviewOptionalParam() {
+        return mkviewOptionalParam;
+    }
+
+    public void setMkviewOptionalParam(String mkviewOptionalParam) {
+        this.mkviewOptionalParam = mkviewOptionalParam;
     }
 
     public String getPromotionLevel() {

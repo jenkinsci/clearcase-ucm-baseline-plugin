@@ -44,18 +44,25 @@
     <f:entry title="${%View name}" field="viewName">
         <f:textbox name="parameter.viewName" value="${instance.viewName}" />
     </f:entry>
-    <f:entry field="snapshotView">
-        <f:checkbox name="snapshotView"
-            checked="${instance.snapshotView}"
-            default="true"/>
-        <label class="attach-previous">${%Use snapshot view}</label>
-    </f:entry>
-    <f:entry field="useUpdate">
-        <f:checkbox name="useUpdate" checked="${instance.useUpdate}"/>
-        <label class="attach-previous">${%Use update}</label>
-    </f:entry>
-    <f:entry field="forceRmview">
-        <f:checkbox name="forceRmview" checked="${instance.forceRmview}"/>
-        <label class="attach-previous">${%Force rmview}</label>
-    </f:entry>
+    <f:advanced>
+        <f:entry title="${%Additional mkview arguments}" field="mkviewOptionalParam">
+            <f:expandableTextbox
+                name="parameter.mkviewOptionalParam"
+                value="${instance.mkviewOptionalParam}" />
+        </f:entry>
+        <f:entry field="snapshotView">
+            <f:checkbox name="snapshotView"
+                checked="${instance.snapshotView}"
+                default="true"/>
+            <label class="attach-previous">${%Use snapshot view}</label>
+        </f:entry>
+        <f:entry field="useUpdate">
+            <f:checkbox name="useUpdate" checked="${instance.useUpdate}"/>
+            <label class="attach-previous">${%Use update}</label>
+        </f:entry>
+        <f:entry field="forceRmview">
+            <f:checkbox name="forceRmview" checked="${instance.forceRmview}"/>
+            <label class="attach-previous">${%Force rmview}</label>
+        </f:entry>
+    </f:advanced>
 </j:jelly>

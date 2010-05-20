@@ -84,6 +84,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
 
     private final String component;
     private final boolean forceRmview;
+    private final String mkviewOptionalParam;
     /**
      * The promotion level is optional: If not is set, then the user will be
      * offered with all the baselines of the ClearCase UCM component.
@@ -112,7 +113,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
     private final UUID uuid;
 
     @DataBoundConstructor
-    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String stream, String restrictions, String viewName, boolean snapshotView, boolean useUpdate, boolean forceRmview, String uuid) {
+    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String stream, String restrictions, String viewName, String mkviewOptionalParam, boolean snapshotView, boolean useUpdate, boolean forceRmview, String uuid) {
         super(PARAMETER_NAME); // we keep the name of the parameter not
                                // internationalized, it will save many
                                // issues when updating system settings
@@ -124,6 +125,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         this.stream = stream;
         this.restrictions = restrictions;
         this.viewName = viewName;
+        this.mkviewOptionalParam = mkviewOptionalParam;
         this.snapshotView = snapshotView;
         this.useUpdate = useUpdate;
         this.forceRmview = forceRmview;
@@ -147,7 +149,9 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         }
         else {
             return new ClearCaseUcmBaselineParameterValue(
-                    getName(), getPvob(), getComponent(), getPromotionLevel(), getStream(), getViewName(), values[0], getUseUpdate(), getForceRmview(), getSnapshotView());
+                    getName(), getPvob(), getComponent(), getPromotionLevel(),
+                    getStream(), getViewName(), getMkviewOptionalParam(),
+                    values[0], getUseUpdate(), getForceRmview(), getSnapshotView());
         }
     }
 
@@ -281,6 +285,10 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
 
     public boolean getForceRmview() {
         return forceRmview;
+    }
+
+    public String getMkviewOptionalParam() {
+        return mkviewOptionalParam;
     }
 
     public String getPromotionLevel() {
