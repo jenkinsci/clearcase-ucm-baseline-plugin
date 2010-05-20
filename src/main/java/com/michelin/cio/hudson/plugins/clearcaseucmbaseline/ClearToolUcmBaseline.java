@@ -320,6 +320,11 @@ public class ClearToolUcmBaseline extends ClearToolExec {
         unsupportedMethod(Thread.currentThread().getStackTrace()[0]);
     }
 
+    // ClearCase plugin 1.2 upward compatibility
+    public void update(String viewName, String[] loadRules) throws IOException, InterruptedException {
+        unsupportedMethod(Thread.currentThread().getStackTrace()[0]);
+    }
+
     /**
      * Always throws an {@link UnsupportedOperationException}.
      * 
