@@ -64,5 +64,9 @@
             <f:checkbox name="forceRmview" checked="${instance.forceRmview}"/>
             <label class="attach-previous">${%Force rmview}</label>
         </f:entry>
+        <f:entry field="excludeElementCheckedout">
+            <f:checkbox name="excludeElementCheckedout" checked="${instance.excludeElementCheckedout}"/>
+            <label class="attach-previous">${%Exclude element CHECKEDOUT}</label>
+        </f:entry>
     </f:advanced>
 </j:jelly>

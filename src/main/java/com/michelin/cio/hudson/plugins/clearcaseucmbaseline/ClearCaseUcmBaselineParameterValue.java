@@ -82,8 +82,11 @@ import org.kohsuke.stapler.export.Exported;
  */
 public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
+    // TODO move the attributes of this class and of ClearCaseUcmBaselineParameterDefinition
+    // to a single dedicated class to avoid having too much duplicated code
     @Exported(visibility=3) private String baseline;        // this att is set by the user once the build takes place
     @Exported(visibility=3) private String component;       // this att comes from ClearCaseUcmBaselineParameterDefinition
+    @Exported(visibility=3) private boolean excludeElementCheckedout; // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private boolean forceRmview;    // this att can be overriden by the user but default value
                                                             // comes from ClearCaseUcmBaselineParameterDefinition
     private String mkviewOptionalParam;                     // this att comes from ClearCaseUcmBaselineParameterDefinition
@@ -91,7 +94,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     @Exported(visibility=3) private String pvob;            // this att comes from ClearCaseUcmBaselineParameterDefinition
     private List<String> restrictions;                      // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private boolean snapshotView;   // this att comes from ClearCaseUcmBaselineParameterDefinition
-    @Exported(visibility=3) private String stream;          // this att comes from ClearCaseUcmBaselineParameterDefinition
+    private String stream;                                  // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private boolean useUpdate;      // this att comes from ClearCaseUcmBaselineParameterDefinition
     @Exported(visibility=3) private String viewName;        // this att comes from ClearCaseUcmBaselineParameterDefinition
 
@@ -103,13 +106,14 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     // Is it because of the two booleans? No time to investigate, sorry.
     @DataBoundConstructor
     public ClearCaseUcmBaselineParameterValue(String name, String baseline, boolean forceRmview) {
-        this(name, null, null, null, null, null, null, baseline, false, forceRmview, false);
+        this(name, null, null, null, null, null, null, baseline, false, forceRmview, false, false);
     }
 
     public ClearCaseUcmBaselineParameterValue(
             String name, String pvob, String component, String promotionLevel,
             String stream, String viewName, String mkviewOptionalParam, String baseline,
-            boolean useUpdate, boolean forceRmview, boolean snapshotView) {
+            boolean useUpdate, boolean forceRmview, boolean snapshotView,
+            boolean excludeElementCheckedout) {
         super(name);
         this.pvob = ClearCaseUcmBaselineUtils.prefixWithSeparator(pvob);
         this.component = component;
@@ -121,6 +125,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
         this.useUpdate = useUpdate;
         this.forceRmview = forceRmview;
         this.snapshotView = snapshotView;
+        this.excludeElementCheckedout = excludeElementCheckedout;
     }
 
     /**
@@ -268,7 +273,6 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
                                 // --- 2. We create the view to be loaded ---
 
-                                // cleartool mkview -tag <tag> <view path>
                                 cleartool.mkview(viewName, mkviewOptionalParam, snapshotView, null);
                             }
                         } else {
@@ -277,7 +281,9 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
                         // --- 3. We create the configspec ---
 
-                        configSpec.append("element * CHECKEDOUT").append(newlineForOS);
+                        if(excludeElementCheckedout) {
+                            configSpec.append("element * CHECKEDOUT").append(newlineForOS);
+                        }
 
                         Set<String> loadRules = new HashSet<String>(); // we use a Set to avoid duplicate load rules (cf. HUDSON-6398)
 
@@ -404,6 +410,14 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
     public void setComponent(String component) {
         this.component = component;
+    }
+
+    public boolean getExcludeElementCheckedout() {
+        return excludeElementCheckedout;
+    }
+
+    public void setExcludeElementCheckedout(boolean excludeElementCheckedout) {
+        this.excludeElementCheckedout = excludeElementCheckedout;
     }
 
     public boolean getForceRmview() {

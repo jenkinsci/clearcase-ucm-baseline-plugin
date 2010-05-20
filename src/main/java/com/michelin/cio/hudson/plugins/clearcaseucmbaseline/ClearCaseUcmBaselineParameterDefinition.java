@@ -83,6 +83,11 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
     public final static String PARAMETER_NAME = "ClearCase UCM baseline";
 
     private final String component;
+    /**
+     * Allows excluding the "element * CHECKEDOUT" rule from the config spec (cf.
+     * HUDSON-6411)
+     */
+    private final boolean excludeElementCheckedout;
     private final boolean forceRmview;
     private final String mkviewOptionalParam;
     /**
@@ -113,7 +118,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
     private final UUID uuid;
 
     @DataBoundConstructor
-    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String stream, String restrictions, String viewName, String mkviewOptionalParam, boolean snapshotView, boolean useUpdate, boolean forceRmview, String uuid) {
+    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String stream, String restrictions, String viewName, String mkviewOptionalParam, boolean snapshotView, boolean useUpdate, boolean forceRmview, boolean excludeElementCheckedout, String uuid) {
         super(PARAMETER_NAME); // we keep the name of the parameter not
                                // internationalized, it will save many
                                // issues when updating system settings
@@ -129,6 +134,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         this.snapshotView = snapshotView;
         this.useUpdate = useUpdate;
         this.forceRmview = forceRmview;
+        this.excludeElementCheckedout = excludeElementCheckedout;
 
         if(uuid == null || uuid.length() == 0) {
             this.uuid = UUID.randomUUID();
@@ -151,7 +157,8 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
             return new ClearCaseUcmBaselineParameterValue(
                     getName(), getPvob(), getComponent(), getPromotionLevel(),
                     getStream(), getViewName(), getMkviewOptionalParam(),
-                    values[0], getUseUpdate(), getForceRmview(), getSnapshotView());
+                    values[0], getUseUpdate(), getForceRmview(), getSnapshotView(),
+                    getExcludeElementCheckedout());
         }
     }
 
@@ -281,6 +288,10 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
 
     public String getComponent() {
         return component;
+    }
+
+    public boolean getExcludeElementCheckedout() {
+        return excludeElementCheckedout;
     }
 
     public boolean getForceRmview() {
