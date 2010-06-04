@@ -173,12 +173,14 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         value.setPromotionLevel(promotionLevel);
         value.setRestrictions(getRestrictionsAsList());
         value.setViewName(viewName);
-        value.setSnapshotView(snapshotView);
-        value.setUseUpdate(useUpdate);
+        value.setMkviewOptionalParam(mkviewOptionalParam);
         // we don't set forceRmview: we use the value which is set by the user
         // (so it is in formData) to allow overriding the setting ==> the value
         // was set when invoking req.bindJSON()
         //value.setForceRmview(forceRmview);
+        value.setSnapshotView(snapshotView);
+        value.setUseUpdate(useUpdate);
+        value.setExcludeElementCheckedout(excludeElementCheckedout);
 
         return value;
     }
