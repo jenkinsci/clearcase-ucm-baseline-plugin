@@ -36,9 +36,8 @@ import hudson.util.VariableResolver;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -58,19 +57,19 @@ public class ClearToolUcmBaseline extends ClearToolExec {
      * Used to cache components given the baseline they belong to (the key is
      * a baseline selector).
      */
-    private transient Map<String, String> componentsCache = new Hashtable<String, String>();
+    private transient Map<String, String> componentsCache = new HashMap<String, String>();
     /**
      * Used to cache root dirs given the component they belong to (the key is
      * a component selector).
      */
-    private transient Map<String, String> componentRootDirsCache = new Hashtable<String, String>();
+    private transient Map<String, String> componentRootDirsCache = new HashMap<String, String>();
     /**
      * Used to cache the dependent baselines given the baseline they depend on.
      */
-    private transient Map<String, String[]> dependentBaselinesCache = new Hashtable<String, String[]>();
+    private transient Map<String, String[]> dependentBaselinesCache = new HashMap<String, String[]>();
 
     public ClearToolUcmBaseline(VariableResolver variableResolver, ClearToolLauncher launcher) {
-        super(variableResolver, launcher);
+        super(variableResolver, launcher, null);
     }
 
     /**
@@ -214,6 +213,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
         unsupportedMethod(Thread.currentThread().getStackTrace()[0]);
     }
 
+    @Override
     public void rmview(String viewName) throws IOException, InterruptedException {
         // cleartool rmview -force <view name>
         ArgumentListBuilder cmd = new ArgumentListBuilder();
@@ -241,6 +241,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
         }
     }
 
+    @Override
     public void rmviewtag(String viewName) throws IOException, InterruptedException {
         unsupportedMethod(Thread.currentThread().getStackTrace()[0]);
     }
@@ -280,6 +281,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
     }
 
     // ClearCase plugin 1.1 upward compatibility
+    @Override
     public void mkview(String viewName, String streamSelector, String defaultStorageDir) throws IOException, InterruptedException {
         unsupportedMethod(Thread.currentThread().getStackTrace()[0]);
     }
@@ -312,6 +314,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
         }
     }
 
+    @Override
     public void startView(String viewTags) throws IOException, InterruptedException {
         unsupportedMethod(Thread.currentThread().getStackTrace()[0]);
     }
@@ -321,6 +324,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
     }
 
     // ClearCase plugin 1.2 upward compatibility
+    @Override
     public void update(String viewName, String[] loadRules) throws IOException, InterruptedException {
         unsupportedMethod(Thread.currentThread().getStackTrace()[0]);
     }

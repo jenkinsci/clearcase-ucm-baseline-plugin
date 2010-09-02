@@ -37,8 +37,10 @@ import hudson.model.ParametersDefinitionProperty;
 import hudson.model.TaskListener;
 import hudson.plugins.clearcase.AbstractClearCaseScm;
 import hudson.scm.ChangeLogParser;
+import hudson.scm.PollingResult;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
+import hudson.scm.SCMRevisionState;
 import java.io.File;
 import java.io.IOException;
 import org.jvnet.localizer.ResourceBundleHolder;
@@ -132,8 +134,21 @@ public class ClearCaseUcmBaselineSCM extends SCM {
     }
 
     @Override
+    @Deprecated
     public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         return false;
+    }
+
+    // we don't need this method ==> no risk to return null
+    @Override
+    public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?, ?> ab, Launcher lnchr, TaskListener tl) throws IOException, InterruptedException {
+      return null;
+    }
+
+    // we don't need this method ==> no risk to return null
+    @Override
+    protected PollingResult compareRemoteRevisionWith(AbstractProject<?, ?> ap, Launcher lnchr, FilePath fp, TaskListener tl, SCMRevisionState scmrs) throws IOException, InterruptedException {
+      return null;
     }
 
     @Extension
@@ -150,6 +165,7 @@ public class ClearCaseUcmBaselineSCM extends SCM {
         }
 
         @Override
+        @Deprecated
         public SCM newInstance(StaplerRequest req) throws FormException {
             return new ClearCaseUcmBaselineSCM();
         }

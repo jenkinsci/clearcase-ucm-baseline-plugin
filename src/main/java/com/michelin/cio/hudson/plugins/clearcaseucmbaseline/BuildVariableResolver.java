@@ -27,7 +27,6 @@ package com.michelin.cio.hudson.plugins.clearcaseucmbaseline;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import hudson.model.Computer;
 import hudson.util.VariableResolver;
 
 /**
@@ -45,19 +44,7 @@ public class BuildVariableResolver implements VariableResolver<String> {
     private VariableResolver<String> superVariableResolver;
 
     public BuildVariableResolver(AbstractBuild<?, ?> build, final Launcher launcher, BuildListener listener, String baseline) {
-        try {
-            // this plugin is built against ClearCase plugin 1.0...
-            superVariableResolver = new hudson.plugins.clearcase.util.BuildVariableResolver(build, launcher);
-        }
-        catch(NoSuchMethodError nsme) {
-            // ...but it is also upward compatible with ClearCase plugin 1.1
-            try {
-                superVariableResolver = (VariableResolver) hudson.plugins.clearcase.util.BuildVariableResolver.class.getConstructors()[0].newInstance(build, Computer.currentComputer());
-            } catch(Exception e) {
-                listener.fatalError("No super variable resolver has been instantiated: The will surely lead to a crash...");
-            }
-        }
-
+        superVariableResolver = new hudson.plugins.clearcase.util.BuildVariableResolver(build);
         this.baseline = baseline;
     }
 

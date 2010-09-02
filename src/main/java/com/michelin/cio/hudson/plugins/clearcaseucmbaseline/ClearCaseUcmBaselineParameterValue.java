@@ -146,7 +146,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     public BuildWrapper createBuildWrapper(AbstractBuild<?, ?> build) {
         // let's ensure that a baseline has been really provided
         if(baseline == null || baseline.length() == 0) {
-            fatalErrorMessage.append("The value '" + baseline + "' is not a valid ClearCase UCM baseline.");
+            fatalErrorMessage.append("The value '").append(baseline).append("' is not a valid ClearCase UCM baseline.");
         }
 
         // HUDSON-5877: let's ensure the job has no publishers/notifiers coming
@@ -213,12 +213,12 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                     // the CLEARCASE_BASELINE env variable (cf. HUDSON-6410)
                     VariableResolver variableResolver = new BuildVariableResolver(build, launcher, listener, baseline);
 
-                    ClearToolLauncher clearToolLauncher = createClearToolLauncher(listener, build.getProject().getWorkspace(), launcher);
+                    ClearToolLauncher clearToolLauncher = createClearToolLauncher(listener, build.getProject().getSomeWorkspace(), launcher);
                     ClearToolUcmBaseline cleartool = new ClearToolUcmBaseline(variableResolver, clearToolLauncher);
 
                     viewName = generateNormalizedViewName(variableResolver, viewName);
 
-                    FilePath workspace = build.getProject().getWorkspace();
+                    FilePath workspace = build.getProject().getSomeWorkspace();
                     FilePath viewPath = workspace.child(viewName);
                     StringBuilder configSpec = new StringBuilder();
 
@@ -305,7 +305,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                             int indexOfSeparator = dependentBaselineSelector.indexOf('@');
                             if(indexOfSeparator == -1) {
                                 if(LOGGER.isLoggable(Level.INFO)) {
-                                    LOGGER.info("Ignoring dependent baseline '" + dependentBaselineSelector + '\'');
+                                    LOGGER.log(Level.INFO, "Ignoring dependent baseline '{0}{1}", new Object[]{dependentBaselineSelector, '\''});
                                 }
                                 continue;
                             }
@@ -369,7 +369,6 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                                     baseline);
                             env.put(AbstractClearCaseScm.CLEARCASE_VIEWNAME_ENVSTR,
                                     viewName);
-
                             env.put(AbstractClearCaseScm.CLEARCASE_VIEWPATH_ENVSTR,
                                     env.get("WORKSPACE") + fileSepForOS + viewName);
                         }

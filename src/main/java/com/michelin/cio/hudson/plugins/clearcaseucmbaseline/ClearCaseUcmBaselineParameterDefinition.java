@@ -205,7 +205,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
             cmd.add("-stream");
             cmd.add(stream + '@' + pvob);
         }
-         cmd.add("-component");
+        cmd.add("-component");
         cmd.add(component + '@' + pvob);
 
         // we have to find the node the job is assigned to so that we run the
@@ -244,12 +244,12 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         Computer computerRunnningThisJob = nodeRunningThisJob.toComputer();
         if(computerRunnningThisJob.isOffline()) {
             if(computerRunnningThisJob.isLaunchSupported()) {
-                LOGGER.info(nodeRunningThisJob.getDisplayName() + " is offline. Trying to launch it...");
+                LOGGER.log(Level.INFO, "{0} is offline. Trying to launch it...", nodeRunningThisJob.getDisplayName());
 
                 try {
                     computerRunnningThisJob.connect(false).get();
 
-                    LOGGER.info("Waiting 10 seconds for " + nodeRunningThisJob.getDisplayName() + " to be launched...");
+                    LOGGER.log(Level.INFO, "Waiting 10 seconds for {0} to be launched...", nodeRunningThisJob.getDisplayName());
                     Thread.sleep(10000);
 
                     do {
@@ -261,7 +261,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
                 }
             }
             else {
-                LOGGER.severe(nodeRunningThisJob.getDisplayName() + " can't be automatically launched. You must start it before trying to run this job.");
+                LOGGER.log(Level.SEVERE, "{0} can't be automatically launched. You must start it before trying to run this job.", nodeRunningThisJob.getDisplayName());
                 return null;
             }
         }
@@ -273,7 +273,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
             baos.close();
 
             if(cleartoolOutput.toString().contains("cleartool: Error")) {
-                LOGGER.warning("An error occurred while gathering ClearCase UCM baselines: " + cleartoolOutput);
+                LOGGER.log(Level.WARNING, "An error occurred while gathering ClearCase UCM baselines: {0}", cleartoolOutput);
                 return null;
             }
             else {
@@ -281,9 +281,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
             }
         }
         else {
-            LOGGER.log(
-                    Level.SEVERE,
-                    nodeRunningThisJob.getDisplayName() + " is offline and couldn't be launched.");
+            LOGGER.log(Level.SEVERE, "{0} is offline and couldn't be launched.", nodeRunningThisJob.getDisplayName());
             return null;
         }
     }

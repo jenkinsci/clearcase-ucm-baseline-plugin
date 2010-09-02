@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jvnet.hudson.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.312</version>
+    <version>1.358</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -23,7 +23,7 @@
     <developer>
       <id>rseguy</id>
       <name>Romain Seguy</name>
-      <email>rseguy@ifrance.com</email>
+      <email>romain.seguy@gmail.com</email>
       <timezone>+1</timezone>
     </developer>
   </developers>
@@ -32,7 +32,7 @@
     <dependency>
       <groupId>org.jvnet.hudson.plugins</groupId>
       <artifactId>clearcase</artifactId>
-        <version>1.0.2</version>
+        <version>1.3</version>
     </dependency>
   </dependencies>
 </project>
