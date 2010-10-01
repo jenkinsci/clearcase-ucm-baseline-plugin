@@ -1,0 +1,38 @@
+<!--
+  - The MIT License
+  -
+  - Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+  -
+  - Permission is hereby granted, free of charge, to any person obtaining a copy
+  - of this software and associated documentation files (the "Software"), to deal
+  - in the Software without restriction, including without limitation the rights
+  - to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  - copies of the Software, and to permit persons to whom the Software is
+  - furnished to do so, subject to the following conditions:
+  -
+  - The above copyright notice and this permission notice shall be included in
+  - all copies or substantial portions of the Software.
+  -
+  - THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  - IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  - FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  - AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  - LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  - OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  - THE SOFTWARE.
+  -->
+
+<div>
+    <b>Optional</b> &mdash; List of folders (one folder per line) to be actually
+    downloaded from ClearCase.<br/>
+    For this field to be taken into account, you need to check the <b>Use
+    snapshot view</b> field.<br/>
+    If no restrictions are defined, then all the data for the selected ClearCase
+    UCM baseline will be downloaded. If restrictions are defined, then only
+    these folders will be downloaded.<br/>
+    For each folder to download, don't forget to prefix them with the VOB name
+    and the component root dir (usually identical to the component name) this
+    folder belongs to. For example, if you want to download the folder
+    <code>05_impl/0_src</code> which is in the <code>fa4_web</code> component of
+    the <code>fa4</code> VOB, set the value to <code>/fa/fa4_web/05_impl/0_src</code>.
+</div>

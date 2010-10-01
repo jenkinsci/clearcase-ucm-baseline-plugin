@@ -1,0 +1,74 @@
+<!--
+  - The MIT License
+  -
+  - Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy,
+  -                     Amadeus SAS, Vincent Latombe
+  -
+  - Permission is hereby granted, free of charge, to any person obtaining a copy
+  - of this software and associated documentation files (the "Software"), to deal
+  - in the Software without restriction, including without limitation the rights
+  - to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  - copies of the Software, and to permit persons to whom the Software is
+  - furnished to do so, subject to the following conditions:
+  -
+  - The above copyright notice and this permission notice shall be included in
+  - all copies or substantial portions of the Software.
+  -
+  - THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  - IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  - FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  - AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  - LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  - OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  - THE SOFTWARE.
+  -->
+
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:entry title="${%PVOB}" field="pvob">
+        <f:textbox name="parameter.pvob" value="${instance.pvob}" />
+    </f:entry>
+    <f:entry title="${%Component}" field="component">
+        <f:textbox name="parameter.component" value="${instance.component}" />
+    </f:entry>
+    <f:entry title="${%Promotion level}" field="promotionLevel">
+        <f:textbox name="parameter.promotionLevel" value="${instance.promotionLevel}" />
+    </f:entry>
+    <f:entry title="${%Stream}" field="stream">
+        <f:textbox name="parameter.stream" value="${instance.stream}" />
+    </f:entry>
+    <f:entry title="${%Restrict folders to}" field="restrictions">
+        <f:expandableTextbox
+            name="parameter.restrictions"
+            value="${instance.restrictions}" />
+    </f:entry>
+    <f:entry title="${%View name}" field="viewName">
+        <f:textbox name="parameter.viewName" value="${instance.viewName}" />
+    </f:entry>
+    <f:advanced>
+        <f:entry title="${%Additional mkview arguments}" field="mkviewOptionalParam">
+            <f:expandableTextbox
+                name="parameter.mkviewOptionalParam"
+                value="${instance.mkviewOptionalParam}" />
+        </f:entry>
+        <f:entry field="snapshotView">
+            <f:checkbox name="snapshotView"
+                checked="${instance.snapshotView}"
+                default="true"/>
+            <label class="attach-previous">${%Use snapshot view}</label>
+        </f:entry>
+        <f:entry field="useUpdate">
+            <f:checkbox name="useUpdate" checked="${instance.useUpdate}"/>
+            <label class="attach-previous">${%Use update}</label>
+        </f:entry>
+        <f:entry field="forceRmview">
+            <f:checkbox name="forceRmview" checked="${instance.forceRmview}"/>
+            <label class="attach-previous">${%Force rmview}</label>
+        </f:entry>
+        <f:entry field="excludeElementCheckedout">
+            <f:checkbox
+                name="excludeElementCheckedout"
+                checked="${instance.excludeElementCheckedout}"/>
+            <label class="attach-previous">${%Exclude element CHECKEDOUT}</label>
+        </f:entry>
+    </f:advanced>
+</j:jelly>

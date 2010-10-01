@@ -1,0 +1,45 @@
+<!--
+  - The MIT License
+  -
+  - Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+  -
+  - Permission is hereby granted, free of charge, to any person obtaining a copy
+  - of this software and associated documentation files (the "Software"), to deal
+  - in the Software without restriction, including without limitation the rights
+  - to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  - copies of the Software, and to permit persons to whom the Software is
+  - furnished to do so, subject to the following conditions:
+  -
+  - The above copyright notice and this permission notice shall be included in
+  - all copies or substantial portions of the Software.
+  -
+  - THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  - IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  - FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  - AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  - LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  - OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  - THE SOFTWARE.
+  -->
+
+<div>
+    <b>Obligatoire</b> &mdash; Nom de la vue ClearCase UCM qui sera
+    cr&acute;&acute; pour  permettre le t&acute;l&acute;chargement de la ligne
+    de base ClearCase UCM s&acute;lectionn&acute;e lors d'un build.<br/>
+    Il est possible d'utiliser certaines variables pour construire le nom de la
+    vue, par exemple:<ul>
+    <li><code>CLEARCASE_BASELINE</code>, qui sera remplac&eacute; par le nom de
+        la ligne de base ClearCase UCM s&eacute;lectionn&eacute;e au
+        d&eacute;marrage d'un build ;</li>
+    <li><code>JOB_NAME</code>, qui sera remplac&eacute; par le nom du job ;</li>
+    <li><code>USER_NAME</code>, qui sera remplac&eacute; par le nom de
+        l'utilisateur avec lequel Hudson s'ex&eacute;cute.</li>
+    </ul>
+    Il est possible d'acc&acute;der &agrave; cette vue en utilisant l'une des
+    deux variables d'environnement ci-dessous:<ul>
+    <li>le nom de la vue est disponible en tant que <code>CLEARCASE_VIEWNAME
+        </code> ;</li>
+    <li>le chemin absolu vers cette vue est disponible en tant que <code>
+        CLEARCASE_VIEWPATH</code>.</li>
+    </ul>
+</div>
