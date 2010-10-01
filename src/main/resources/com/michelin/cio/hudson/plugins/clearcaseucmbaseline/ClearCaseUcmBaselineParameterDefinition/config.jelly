@@ -67,8 +67,7 @@
         <f:entry field="excludeElementCheckedout">
             <f:checkbox
                 name="excludeElementCheckedout"
-                checked="${instance.excludeElementCheckedout}"
-                default="true"/>
+                checked="${instance.excludeElementCheckedout}"/>
             <label class="attach-previous">${%Exclude element CHECKEDOUT}</label>
         </f:entry>
     </f:advanced>

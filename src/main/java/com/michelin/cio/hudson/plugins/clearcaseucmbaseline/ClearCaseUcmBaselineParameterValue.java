@@ -127,7 +127,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
         this.snapshotView = snapshotView;
         if(this.snapshotView) {
             // the "element * CHECKEDOUT" rule is mandatory for snapshot views
-            this.excludeElementCheckedout = true;
+            this.excludeElementCheckedout = false;
         }
         else {
             this.excludeElementCheckedout = excludeElementCheckedout;
