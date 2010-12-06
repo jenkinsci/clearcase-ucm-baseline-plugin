@@ -265,7 +265,13 @@ public class ClearToolUcmBaseline extends ClearToolExec {
             cmd.addTokenized(Util.replaceMacro(mkviewOptionalParam, variableResolver));
         }
 
-        cmd.add(viewName);
+        // HUDSON-8168
+        // cleartool mkview ...
+        // { –stg/loc { view-stgloc-name | –aut/o }
+        //   | [ –hos/t hostname –hpa/th host-storage-pname –gpa/th global-storage-pname ] dynamic-view-storage-pname }
+        if(!StringUtils.contains(mkviewOptionalParam, "-stg")) {
+            cmd.add(viewName);
+        }
 
         // run the cleartool command
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -278,6 +284,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
             launcher.getListener().error("Failed to create view " + viewName + ".");
             throw new IOException("Failed to create view " + viewName + ": " + cleartoolOutput);
         }
+ 
     }
 
     // ClearCase plugin 1.1 upward compatibility
@@ -297,7 +304,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
         cmd.add("setcs");
         cmd.add("-tag");
         cmd.add(viewName);
-     	cmd.add(configSpecLocation);
+        cmd.add(configSpecLocation);
 
         // run the cleartool command
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
