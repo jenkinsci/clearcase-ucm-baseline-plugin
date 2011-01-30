@@ -48,7 +48,6 @@ public class BuildVariableResolver implements VariableResolver<String> {
         this.baseline = baseline;
     }
 
-    @Override
     public String resolve(String key) {
         if(ClearCaseUcmBaselineSCM.CLEARCASE_BASELINE_ENVSTR.equals(key)) {
             return baseline.trim();

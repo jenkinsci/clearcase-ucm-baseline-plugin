@@ -1,9 +1,10 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
- * Copyright (c) 2007-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
- *                          Henrik Lynggaard, Peter Liljenberg, Andrew Bayer
+ * Copyright (c) 2010-2011, Manufacture Française des Pneumatiques Michelin,
+ * Romain Seguy
+ * Copyright (c) 2007-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Erik Ramfelt, Henrik Lynggaard, Peter Liljenberg, Andrew Bayer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,6 +71,30 @@ public class ClearToolUcmBaseline extends ClearToolExec {
 
     public ClearToolUcmBaseline(VariableResolver variableResolver, ClearToolLauncher launcher) {
         super(variableResolver, launcher, null);
+    }
+
+    /**
+     * Returns, for a given ClearCase UCM baseline, its description.
+     */
+    public String getBaselineDescription(String pvob, String baseline) throws IOException, InterruptedException {
+        // cleartool desc baseline:<baseline>@/<pvob>
+        ArgumentListBuilder cmd = new ArgumentListBuilder();
+        cmd.add("desc");
+        cmd.add("baseline:" + baseline + '@' + pvob);
+
+        // run the cleartool command
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        launcher.run(cmd.toCommandArray(), null, baos, null);
+        String cleartoolOutput = ClearCaseUcmBaselineUtils.processCleartoolOuput(baos);
+        baos.close();
+
+        // ensure no error has occured
+        if(cleartoolOutput.contains("cleartool: Error")) {
+            launcher.getListener().error("Failed to get the description for baseline " + baseline + ".");
+            throw new IOException("Failed to get the description for baseline " + baseline + ": " + cleartoolOutput);
+        }
+
+        return cleartoolOutput;
     }
 
     /**
@@ -174,7 +199,6 @@ public class ClearToolUcmBaseline extends ClearToolExec {
         String[] dependentBaselines = null;
 
         ArgumentListBuilder cmd = new ArgumentListBuilder();
-        cmd.clear();
         cmd.add("lsbl");
         cmd.add("-fmt");
         cmd.add("%[depends_on_closure]p");
@@ -284,7 +308,6 @@ public class ClearToolUcmBaseline extends ClearToolExec {
             launcher.getListener().error("Failed to create view " + viewName + ".");
             throw new IOException("Failed to create view " + viewName + ": " + cleartoolOutput);
         }
- 
     }
 
     // ClearCase plugin 1.1 upward compatibility

@@ -1,8 +1,8 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy,
- *                     Amadeus SAS, Vincent Latombe
+ * Copyright (c) 2010-2011, Manufacture Française des Pneumatiques Michelin,
+ * Romain Seguy, Amadeus SAS, Vincent Latombe
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@ import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.model.ParameterDefinition;
+import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.TaskListener;
@@ -40,12 +41,23 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -65,7 +77,8 @@ import org.kohsuke.stapler.StaplerRequest;
  * baseline at run-time by displaying a drop-down list. See {@link ClearCaseUcmBaselineParameterValue}.
  * </p>
  *
- * <p>This parameter consists in a set of attributes to be set at config-time:<ul>
+ * <p>This parameter consists in a set of attributes to be set at config-time,
+ * the most important being:<ul>
  * <li>The ClearCase UCM PVOB name;</li>
  * <li>The ClearCase UCM component name;</li>
  * <li>The ClearCase UCM promotion level (e.g. RELEASED);</li>
@@ -76,20 +89,34 @@ import org.kohsuke.stapler.StaplerRequest;
  * <li>The ClearCase UCM baseline.</li>
  * </ul></p>
  *
- * @author Romain Seguy (http://davadoc.deviantart.com)
+ * @author Romain Seguy (http://openromain.blogspot.com)
  */
 public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition implements Comparable<ClearCaseUcmBaselineParameterDefinition> {
 
+    /**
+     * Used to validate the {@link #moreRecentThan} field.
+     */
+    final static String MORE_RECENT_THAN_REGEX = "[0-9]+ *([Yy][Ee][Aa][Rr]|[Mm][Oo][Nn][Tt][Hh]|[Ww][Ee][Ee][Kk]|[Dd][Aa][Yy])[Ss]?";
     public final static String PARAMETER_NAME = "ClearCase UCM baseline";
 
     private final String component;
     /**
      * Allows excluding the "element * CHECKEDOUT" rule from the config spec (cf.
-     * HUDSON-6411)
+     * HUDSON-6411).
      */
     private final boolean excludeElementCheckedout;
+    /**
+     * dateFormat is used in getBaselines() to parse dates returned by cleartool.
+     * No need to persist it --> transient.
+     */
+    private transient DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd.HHmmss");
     private final boolean forceRmview;
     private final String mkviewOptionalParam;
+    /**
+     * Allows displaying only baselines more recent than a given duration (cf.
+     * HUDSON-8013).
+     */
+    private final String moreRecentThan;
     /**
      * The promotion level is optional: If not is set, then the user will be
      * offered with all the baselines of the ClearCase UCM component.
@@ -118,7 +145,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
     private final UUID uuid;
 
     @DataBoundConstructor
-    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String stream, String restrictions, String viewName, String mkviewOptionalParam, boolean snapshotView, boolean useUpdate, boolean forceRmview, boolean excludeElementCheckedout, String uuid) {
+    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String stream, String restrictions, String viewName, String mkviewOptionalParam, boolean snapshotView, boolean useUpdate, boolean forceRmview, boolean excludeElementCheckedout, String moreRecentThan, String uuid) {
         super(PARAMETER_NAME); // we keep the name of the parameter not
                                // internationalized, it will save many
                                // issues when updating system settings
@@ -135,6 +162,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         this.useUpdate = useUpdate;
         this.forceRmview = forceRmview;
         this.excludeElementCheckedout = excludeElementCheckedout;
+        this.moreRecentThan = moreRecentThan.trim();
 
         if(uuid == null || uuid.length() == 0) {
             this.uuid = UUID.randomUUID();
@@ -142,6 +170,38 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         else {
             this.uuid = UUID.fromString(uuid);
         }
+    }
+
+    public int compareTo(ClearCaseUcmBaselineParameterDefinition pd) {
+        if(pd.uuid.equals(uuid)) {
+            return 0;
+        }
+        return -1;
+    }
+
+    /**
+     * Computes, from the {@link #moreRecentThan} field, the date of the oldest
+     * baseline to be displayed to the user.
+     */
+    private Date computeOldestBaselineDate() {
+        String[] splittedMoreRecentThan = moreRecentThan.split("[ a-zA-Z]");
+        splittedMoreRecentThan[1] = splittedMoreRecentThan[1].toLowerCase();
+
+        int amount = Integer.parseInt(splittedMoreRecentThan[0]);
+        if(splittedMoreRecentThan[1].startsWith("year")) {
+            amount *= 365; // let's not worry about leap years
+        }
+        else if(splittedMoreRecentThan[1].startsWith("month")) {
+            amount *= 31; // let's not worry about leap years
+        }
+        else if(splittedMoreRecentThan[1].startsWith("week")) {
+            amount *= 7;
+        }
+
+        Calendar oldestBaselineDate = Calendar.getInstance();
+        oldestBaselineDate.add(Calendar.DATE, -1 * amount);
+
+        return oldestBaselineDate.getTime();
     }
 
     // This method is invoked from a GET or POST HTTP request
@@ -186,17 +246,17 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
     }
 
     /**
-     * Returns an array of ClearCase UCM baselines to be displayed in
+     * Returns a list of ClearCase UCM baselines to be displayed in
      * {@code ClearCaseUcmBaselineParameterDefinition/index.jelly} (or {@code null}
      * if something wrong happens).
      */
-    public String[] getBaselines() throws IOException, InterruptedException {
+    public List<String> getBaselines() throws IOException, InterruptedException {
         // cleartool lsbl -fmt "%[name]p " -level <promotion level> -stream <stream>@<pvob> -component <component>@<vob>
         ArgumentListBuilder cmd = new ArgumentListBuilder();
         cmd.add(PluginImpl.getDescriptor().getCleartoolExe());
         cmd.add("lsbl");
         cmd.add("-fmt");
-        cmd.add("%[name]p ");
+        cmd.add("%Nd %[name]p\n");
         if(StringUtils.isNotEmpty(promotionLevel)) {
             cmd.add("-level");
             cmd.add(promotionLevel);
@@ -277,7 +337,40 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
                 return null;
             }
             else {
-                return cleartoolOutput.toString().split(" ");
+                List<String> baselines = Arrays.asList(cleartoolOutput.split("\n"));
+
+                // baselines are sorted (to get the most recent date first)
+                Collections.sort(baselines, new Comparator() {
+                    public int compare(Object o1, Object o2) {
+                        return -1 * ((String) o1).compareTo((String) o2);
+                    }
+                });
+
+                // keep only baselines more recent than xxx
+                if(StringUtils.isNotBlank(moreRecentThan) && moreRecentThan.matches(MORE_RECENT_THAN_REGEX)) {
+                    final Date oldestBaselineDate = computeOldestBaselineDate();
+
+                    CollectionUtils.filter(baselines, new Predicate() {
+                        public boolean evaluate(Object object) {
+                            try {
+                                Date baselineDate = dateFormat.parse((String) object);
+                                return baselineDate.after(oldestBaselineDate);
+                            } catch(ParseException pe) {
+                                // baselines with dates which can't be parsed are included
+                                return true;
+                            }
+                        }
+                    });
+                }
+
+                // the content of the list is tranformed to remove these unuseful dates
+                baselines = (List<String>) CollectionUtils.collect(baselines, new Transformer() {
+                    public Object transform(Object input) {
+                        return ((String) input).substring(16);
+                    }
+                });
+
+                return baselines;
             }
         }
         else {
@@ -302,6 +395,10 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         return mkviewOptionalParam;
     }
 
+    public String getMoreRecentThan() {
+        return moreRecentThan;
+    }
+
     public String getPromotionLevel() {
         return promotionLevel;
     }
@@ -317,9 +414,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
     public List<String> getRestrictionsAsList() {
         ArrayList<String> restrictionsAsList = new ArrayList<String>();
         if(getRestrictions() != null && getRestrictions().length() > 0) {
-            for(String restriction: Util.tokenize(getRestrictions(), "\n\r\f")) {
-                restrictionsAsList.add(restriction);
-            }
+            restrictionsAsList.addAll(Arrays.asList(Util.tokenize(getRestrictions(), "\n\r\f")));
         }
         return restrictionsAsList;
     }
@@ -340,13 +435,6 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         return viewName;
     }
 
-    public int compareTo(ClearCaseUcmBaselineParameterDefinition pd) {
-        if(pd.uuid.equals(uuid)) {
-            return 0;
-        }
-        return -1;
-    }
-
     @Extension
     public static class DescriptorImpl extends ParameterDescriptor {
 
@@ -355,6 +443,13 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
                 return FormValidation.error(ResourceBundleHolder.get(ClearCaseUcmBaselineParameterDefinition.class).format("ComponentMustBeSet"));
             }
 
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckMoreRecentThan(@QueryParameter String value) {
+            if(StringUtils.isNotBlank(value) && !value.matches(MORE_RECENT_THAN_REGEX)) {
+                return FormValidation.error(ResourceBundleHolder.get(ClearCaseUcmBaselineParameterDefinition.class).format("InvalidMoreRecentThanFormat"));
+            }
             return FormValidation.ok();
         }
 

@@ -1,8 +1,8 @@
 <!--
   - The MIT License
   -
-  - Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy,
-  -                     Amadeus SAS, Vincent Latombe
+  - Copyright (c) 2010-2011, Manufacture Française des Pneumatiques Michelin,
+  - Romain Seguy, Amadeus SAS, Vincent Latombe
   -
   - Permission is hereby granted, free of charge, to any person obtaining a copy
   - of this software and associated documentation files (the "Software"), to deal
@@ -25,30 +25,30 @@
 
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <f:entry title="${%PVOB}" field="pvob">
-        <f:textbox name="parameter.pvob" value="${instance.pvob}" />
+        <f:textbox name="parameter.pvob" value="${instance.pvob}"/>
     </f:entry>
     <f:entry title="${%Component}" field="component">
-        <f:textbox name="parameter.component" value="${instance.component}" />
+        <f:textbox name="parameter.component" value="${instance.component}"/>
     </f:entry>
     <f:entry title="${%Promotion level}" field="promotionLevel">
-        <f:textbox name="parameter.promotionLevel" value="${instance.promotionLevel}" />
+        <f:textbox name="parameter.promotionLevel" value="${instance.promotionLevel}"/>
     </f:entry>
     <f:entry title="${%Stream}" field="stream">
-        <f:textbox name="parameter.stream" value="${instance.stream}" />
+        <f:textbox name="parameter.stream" value="${instance.stream}"/>
     </f:entry>
     <f:entry title="${%Restrict folders to}" field="restrictions">
         <f:expandableTextbox
             name="parameter.restrictions"
-            value="${instance.restrictions}" />
+            value="${instance.restrictions}"/>
     </f:entry>
     <f:entry title="${%View name}" field="viewName">
-        <f:textbox name="parameter.viewName" value="${instance.viewName}" />
+        <f:textbox name="parameter.viewName" value="${instance.viewName}"/>
     </f:entry>
     <f:advanced>
         <f:entry title="${%Additional mkview arguments}" field="mkviewOptionalParam">
             <f:expandableTextbox
                 name="parameter.mkviewOptionalParam"
-                value="${instance.mkviewOptionalParam}" />
+                value="${instance.mkviewOptionalParam}"/>
         </f:entry>
         <f:entry field="snapshotView">
             <f:checkbox name="snapshotView"
@@ -69,6 +69,9 @@
                 name="excludeElementCheckedout"
                 checked="${instance.excludeElementCheckedout}"/>
             <label class="attach-previous">${%Exclude element CHECKEDOUT}</label>
+        </f:entry>
+        <f:entry title="${%Display baselines more recent than}" field="moreRecentThan">
+            <f:textbox name="parameter.moreRecentThan" value="${instance.moreRecentThan}"/>
         </f:entry>
     </f:advanced>
 </j:jelly>

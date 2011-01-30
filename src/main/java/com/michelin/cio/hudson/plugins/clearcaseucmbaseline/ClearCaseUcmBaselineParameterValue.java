@@ -1,10 +1,10 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy,
- *                     Amadeus SAS, Vincent Latombe
- * Copyright (c) 2007-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
- *                          Henrik Lynggaard, Peter Liljenberg, Andrew Bayer
+ * Copyright (c) 2010-2011, Manufacture Française des Pneumatiques Michelin,
+ * Romain Seguy, Amadeus SAS, Vincent Latombe
+ * Copyright (c) 2007-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Erik Ramfelt, Henrik Lynggaard, Peter Liljenberg, Andrew Bayer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -134,6 +134,71 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
         }
     }
 
+    private String buildConfigSpec(ClearToolUcmBaseline cleartool, String newlineForOS, String fileSepForOS) throws IOException, InterruptedException {
+        StringBuilder configSpec = new StringBuilder();
+
+        if(!excludeElementCheckedout) {
+            configSpec.append("element * CHECKEDOUT").append(newlineForOS);
+        }
+
+        Set<String> loadRules = new HashSet<String>(); // we use a Set to avoid duplicate load rules (cf. HUDSON-6398)
+
+        // cleartool lsbl -fmt "%[depends_on_closure]p" <baseline>@<pvob>
+        String[] dependentBaselines = cleartool.getDependentBaselines(pvob, baseline);
+
+        // we add the selected baseline at the beginning of the dependentBaselines
+        // array so that the "element" and "load" sections of the config spec are
+        // generated for this baseline
+        dependentBaselines = (String[]) ArrayUtils.add(dependentBaselines, 0, baseline + '@' + pvob);
+
+        for(String dependentBaselineSelector: dependentBaselines) {
+            int indexOfSeparator = dependentBaselineSelector.indexOf('@');
+            if(indexOfSeparator == -1) {
+                if(LOGGER.isLoggable(Level.INFO)) {
+                    LOGGER.log(Level.INFO, "Ignoring dependent baseline '{0}{1}", new Object[]{dependentBaselineSelector, '\''});
+                }
+                continue;
+            }
+
+            String dependentBaseline = dependentBaselineSelector.substring(0, indexOfSeparator);
+            String component = cleartool.getComponentFromBaseline(pvob, dependentBaseline);
+            String componentRootDir = cleartool.getComponentRootDir(pvob, component);
+
+            // some components may be rootless: they must simply be skipped (cf. HUDSON-6398)
+            if(StringUtils.isBlank(componentRootDir)) {
+                continue;
+            }
+
+            // example of generated config spec "element":
+            // element /xxx/spd_comp/... spd_comp_v1.x_20100402100000 -nocheckout
+            configSpec.append("element \"").append(componentRootDir).append(fileSepForOS).append("...\" ").append(dependentBaseline).append(" -nocheckout").append(newlineForOS);
+            // is any download restriction defined?
+            if(restrictions != null && restrictions.size() > 0) {
+                for(String restriction: restrictions) {
+                    // the comparison must not take into account path separators,
+                    // so let's unify them to / for that purpose
+                    String restrictionForComparison = restriction.replace('\\', '/');
+                    String componentRootDirForComparison = componentRootDir.replace('\\', '/');
+                    if(restrictionForComparison.startsWith(componentRootDirForComparison)) {
+                        // example of generated config spec "load":
+                        // load /xxx/spd_comp/src
+                        loadRules.add("load " + restriction);
+                    }
+                }
+            }
+            else {
+                loadRules.add("load " + componentRootDir);
+            }
+        }
+
+        configSpec.append("element * /main/0 -ucm -nocheckout").append(newlineForOS);
+        for(String loadRule: loadRules) {
+            configSpec.append(loadRule).append(newlineForOS);
+        }
+
+        return configSpec.toString();
+    }
+
     /**
      * Returns the {@link BuildWrapper} (defined as an inner class) which does
      * the "checkout" from the ClearCase UCM baseline selected by the user.
@@ -220,7 +285,6 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
                     FilePath workspace = build.getProject().getSomeWorkspace();
                     FilePath viewPath = workspace.child(viewName);
-                    StringBuilder configSpec = new StringBuilder();
 
                     // --- 0. Has the same baseline been retrieved during last execution? ---
 
@@ -285,76 +349,31 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                             cleartool.mkview(viewName, mkviewOptionalParam, snapshotView, null);
                         }
 
-                        // --- 3. We create the configspec ---
+                        // --- 3. We print the description of the selected baseline to have happy users ---
 
-                        if(!excludeElementCheckedout) {
-                            configSpec.append("element * CHECKEDOUT").append(newlineForOS);
+                        String baselineDesc = cleartool.getBaselineDescription(pvob, baseline);
+                        if(StringUtils.isNotBlank(baselineDesc)) {
+                            listener.getLogger().println("--- Description of ClearCase UCM baseline '" + baseline + "' ---");
+                            listener.getLogger().println(baselineDesc);
+                            listener.getLogger().println("--- end of ClearCase UCM baseline description ---");
+                        }
+                        else {
+                            listener.getLogger().println("ClearCase UCM baseline '" + baseline + "' has no description.");
                         }
 
-                        Set<String> loadRules = new HashSet<String>(); // we use a Set to avoid duplicate load rules (cf. HUDSON-6398)
+                        // --- 4. We create the configspec ---
 
-                        // cleartool lsbl -fmt "%[depends_on_closure]p" <baseline>@<pvob>
-                        String[] dependentBaselines = cleartool.getDependentBaselines(pvob, baseline);
-
-                        // we add the selected baseline at the beginning of the dependentBaselines
-                        // array so that the "element" and "load" sections of the config spec are
-                        // generated for this baseline
-                        dependentBaselines = (String[]) ArrayUtils.add(dependentBaselines, 0, baseline + '@' + pvob);
-
-                        for(String dependentBaselineSelector: dependentBaselines) {
-                            int indexOfSeparator = dependentBaselineSelector.indexOf('@');
-                            if(indexOfSeparator == -1) {
-                                if(LOGGER.isLoggable(Level.INFO)) {
-                                    LOGGER.log(Level.INFO, "Ignoring dependent baseline '{0}{1}", new Object[]{dependentBaselineSelector, '\''});
-                                }
-                                continue;
-                            }
-
-                            String dependentBaseline = dependentBaselineSelector.substring(0, indexOfSeparator);
-                            String component = cleartool.getComponentFromBaseline(pvob, dependentBaseline);
-                            String componentRootDir = cleartool.getComponentRootDir(pvob, component);
-
-                            // some components may be rootless: they must simply be skipped (cf. HUDSON-6398)
-                            if(StringUtils.isBlank(componentRootDir)) {
-                                continue;
-                            }
-
-                            // example of generated config spec "element":
-                            // element /xxx/spd_comp/... spd_comp_v1.x_20100402100000 -nocheckout
-                            configSpec.append("element \"").append(componentRootDir).append(fileSepForOS).append("...\" ").append(dependentBaseline).append(" -nocheckout").append(newlineForOS);
-                            // is any download restriction defined?
-                            if(restrictions != null && restrictions.size() > 0) {
-                                for(String restriction: restrictions) {
-                                    // the comparison must not take into account path separators,
-                                    // so let's unify them to / for that purpose
-                                    String restrictionForComparison = restriction.replace('\\', '/');
-                                    String componentRootDirForComparison = componentRootDir.replace('\\', '/');
-                                    if(restrictionForComparison.startsWith(componentRootDirForComparison)) {
-                                        // example of generated config spec "load":
-                                        // load /xxx/spd_comp/src
-                                        loadRules.add("load " + restriction);
-                                    }
-                                }
-                            }
-                            else {
-                                loadRules.add("load " + componentRootDir);
-                            }
-                        }
-
-                        configSpec.append("element * /main/0 -ucm -nocheckout").append(newlineForOS);
-                        for(String loadRule: loadRules) {
-                            configSpec.append(loadRule).append(newlineForOS);
-                        }
+                        String configSpec = buildConfigSpec(cleartool, newlineForOS, fileSepForOS);
 
                         listener.getLogger().println("The view will be created based on the following config spec:");
                         listener.getLogger().println("--- config spec start ---");
-                        listener.getLogger().print(configSpec.toString());
+                        listener.getLogger().print(configSpec);
                         listener.getLogger().println("---  config spec end  ---");
 
-                        // --- 4. We actually load the view based on the configspec ---
+                        // --- 5. We actually load the view based on the configspec ---
 
                         // cleartool setcs <configspec>
-                        cleartool.setcs(viewName, configSpec.toString());
+                        cleartool.setcs(viewName, configSpec);
                     }
                     else {
                         listener.getLogger().println("The requested ClearCase UCM baseline is the same as previous build: Reusing previously loaded view");
@@ -378,26 +397,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
             };
         }
         else {
-            return new BuildWrapper() {
-                /**
-                 * This method makes the build fail when a {@link ClearCaseUcmBaselineParameterDefinition}
-                 * parameter is defined for the job, but the SCM is not an instance
-                 * of {@link ClearCaseUcmBaselineSCM}.
-                 */
-                @Override
-                public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-                    String ccUcmBaselineSCMDisplayName = Hudson.getInstance().getDescriptor(ClearCaseUcmBaselineSCM.class).getDisplayName();
-                    listener.fatalError(
-                            "This job is not set up to use a '"
-                            + ccUcmBaselineSCMDisplayName
-                            + "' SCM while it has a '"
-                            + Hudson.getInstance().getDescriptor(ClearCaseUcmBaselineParameterDefinition.class).getDisplayName()
-                            + "' parameter: Either remove the parameter or set the SCM to be '"
-                            + ccUcmBaselineSCMDisplayName
-                            + "'; In the meantime: Aborting!");
-                    return null;
-                } 
-            };
+            return new FailBuildWrapper();
         }
     }
 
@@ -491,6 +491,29 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
     public void setViewName(String viewName) {
         this.viewName = viewName;
+    }
+    
+    /**
+     * This build wrapper makes the build fail when a {@link ClearCaseUcmBaselineParameterDefinition}
+     * parameter is defined for the job, but the SCM is not an instance of
+     * {@link ClearCaseUcmBaselineSCM}.
+     */
+    class FailBuildWrapper extends BuildWrapper {
+
+        @Override
+        public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            String ccUcmBaselineSCMDisplayName = Hudson.getInstance().getDescriptor(ClearCaseUcmBaselineSCM.class).getDisplayName();
+            listener.fatalError(
+                    "This job is not set up to use a '"
+                    + ccUcmBaselineSCMDisplayName
+                    + "' SCM while it has a '"
+                    + Hudson.getInstance().getDescriptor(ClearCaseUcmBaselineParameterDefinition.class).getDisplayName()
+                    + "' parameter: Either remove the parameter or set the SCM to be '"
+                    + ccUcmBaselineSCMDisplayName
+                    + "'; In the meantime: Aborting!");
+            return null;
+        }
+
     }
 
     private final static Logger LOGGER = Logger.getLogger(ClearCaseUcmBaselineParameterValue.class.getName());
