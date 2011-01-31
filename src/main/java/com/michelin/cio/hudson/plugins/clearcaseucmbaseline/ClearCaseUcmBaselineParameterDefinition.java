@@ -50,6 +50,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -162,7 +163,7 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
         this.useUpdate = useUpdate;
         this.forceRmview = forceRmview;
         this.excludeElementCheckedout = excludeElementCheckedout;
-        this.moreRecentThan = moreRecentThan.trim();
+        this.moreRecentThan = moreRecentThan.trim().toLowerCase();
 
         if(uuid == null || uuid.length() == 0) {
             this.uuid = UUID.randomUUID();
@@ -183,18 +184,17 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
      * Computes, from the {@link #moreRecentThan} field, the date of the oldest
      * baseline to be displayed to the user.
      */
-    private Date computeOldestBaselineDate() {
-        String[] splittedMoreRecentThan = moreRecentThan.split("[ a-zA-Z]");
-        splittedMoreRecentThan[1] = splittedMoreRecentThan[1].toLowerCase();
+    Date computeOldestBaselineDate() {
+        String[] splittedMoreRecentThan = moreRecentThan.split("[ a-zA-Z]"); // removes "year", "month", etc.
 
         int amount = Integer.parseInt(splittedMoreRecentThan[0]);
-        if(splittedMoreRecentThan[1].startsWith("year")) {
+        if(moreRecentThan.endsWith("year") || moreRecentThan.endsWith("years")) {
             amount *= 365; // let's not worry about leap years
         }
-        else if(splittedMoreRecentThan[1].startsWith("month")) {
+        else if(moreRecentThan.endsWith("month") || moreRecentThan.endsWith("months")) {
             amount *= 31; // let's not worry about leap years
         }
-        else if(splittedMoreRecentThan[1].startsWith("week")) {
+        else if(moreRecentThan.endsWith("week") || moreRecentThan.endsWith("weeks")) {
             amount *= 7;
         }
 
@@ -337,7 +337,9 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
                 return null;
             }
             else {
-                List<String> baselines = Arrays.asList(cleartoolOutput.split("\n"));
+                List<String> baselines = new LinkedList<String>();
+                baselines.addAll(Arrays.asList(cleartoolOutput.split("\n"))); // we can't directly use the list return by asList
+                                                                              // since it doesn't support the remove operation
 
                 // baselines are sorted (to get the most recent date first)
                 Collections.sort(baselines, new Comparator() {

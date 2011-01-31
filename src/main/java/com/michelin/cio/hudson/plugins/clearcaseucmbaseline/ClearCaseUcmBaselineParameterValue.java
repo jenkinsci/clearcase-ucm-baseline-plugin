@@ -351,15 +351,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
                         // --- 3. We print the description of the selected baseline to have happy users ---
 
-                        String baselineDesc = cleartool.getBaselineDescription(pvob, baseline);
-                        if(StringUtils.isNotBlank(baselineDesc)) {
-                            listener.getLogger().println("--- Description of ClearCase UCM baseline '" + baseline + "' ---");
-                            listener.getLogger().println(baselineDesc);
-                            listener.getLogger().println("--- end of ClearCase UCM baseline description ---");
-                        }
-                        else {
-                            listener.getLogger().println("ClearCase UCM baseline '" + baseline + "' has no description.");
-                        }
+                        cleartool.getBaselineDescription(pvob, baseline);
 
                         // --- 4. We create the configspec ---
 
