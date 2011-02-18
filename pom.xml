@@ -12,7 +12,7 @@
   <artifactId>clearcase-ucm-baseline</artifactId>
   <packaging>hpi</packaging>
   <name>Hudson ClearCase UCM Baseline Plug-in</name>
-  <url>http://wiki.hudson-ci.org/display/HUDSON/ClearCase+UCM+Baseline+Plugin</url>
+  <url>http://wiki.jenkins-ci.org/display/JENKINS/ClearCase+UCM+Baseline+Plugin</url>
   <version>1.7.3-SNAPSHOT</version>
 
   <properties>
@@ -36,7 +36,8 @@
     </dependency>
   </dependencies>
 
-  <!-- see http://groups.google.com/group/hudson-dev/browse_thread/thread/83e34c639eec470a for the rationale behind this -->
+  <!-- see http://wiki.jenkins-ci.org/display/JENKINS/Migrate+to+Jenkins+Infrastructure for the rationale behind the following entries -->
+
   <build>
     <plugins>
       <plugin>
@@ -48,18 +49,15 @@
     </plugins>
   </build>
 
-  <!-- see http://groups.google.com/group/hudson-dev/browse_thread/thread/83e34c639eec470a for the rationale behind this -->
   <scm>
-    <connection>scm:svn:https://guest@svn.java.net/svn/hudson~svn/trunk/hudson/plugins/clearcase-ucm-baseline</connection>
-    <developerConnection>scm:svn:https://svn.java.net/svn/hudson~svn/trunk/hudson/plugins/clearcase-ucm-baseline</developerConnection>
-    <url>https://hudson.dev.java.net/source/browse/hudson/trunk/hudson/plugins/clearcase-ucm-baseline</url>
+    <connection>scm:git:git://github.com/jenkinsci/clearcase-ucm-baseline-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/clearcase-ucm-baseline-plugin.git</developerConnection>
   </scm>
 
-  <!-- see http://groups.google.com/group/hudson-dev/browse_thread/thread/6ea03cf2b527376c for the rationale behind this -->
   <distributionManagement>
     <repository>
-      <id>java.net-m2-repository</id>
-      <url>http://maven.hudson-labs.org:8081/content/repositories/releases/</url>
+      <id>maven.jenkins-ci.org</id>
+      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
     </repository>
   </distributionManagement>
 </project>
