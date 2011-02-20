@@ -1,10 +1,10 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
- *                     Amadeus SAS, Vincent Latombe
- * Copyright (c) 2007-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
- *                          Henrik Lynggaard, Peter Liljenberg, Andrew Bayer
+ * Copyright (c) 2010-2011, Manufacture Française des Pneumatiques Michelin,
+ * Romain Seguy, Amadeus SAS, Vincent Latombe
+ * Copyright (c) 2007-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Erik Ramfelt, Henrik Lynggaard, Peter Liljenberg, Andrew Bayer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

@@ -90,7 +90,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
 
         // ensure no error has occured
         if(cleartoolOutput.contains("cleartool: Error")) {
-            launcher.getListener().error("Failed to get the description for baseline " + baseline + ".");
+            launcher.getListener().error("[cc-ucm-baseline] Failed to get the description for baseline " + baseline + ".");
             throw new IOException("Failed to get the description for baseline " + baseline + ": " + cleartoolOutput);
         }
 
@@ -126,7 +126,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
 
         // ensure no error has occured
         if(cleartoolOutput.contains("cleartool: Error")) {
-            launcher.getListener().error("Failed to get component from the baseline " + baselineSelector + ".");
+            launcher.getListener().error("[cc-ucm-baseline] Failed to get component from the baseline " + baselineSelector + ".");
             throw new IOException("Failed to get the component from the baseline " + baselineSelector + ": " + cleartoolOutput);
         }
 
@@ -168,7 +168,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
 
         // ensure no error has occured
         if(cleartoolOutput != null && cleartoolOutput.contains("cleartool: Error")) {
-            launcher.getListener().error("Failed to get root dir of the component " + componentSelector + ".");
+            launcher.getListener().error("[cc-ucm-baseline] Failed to get root dir of the component " + componentSelector + ".");
             throw new IOException("Failed to get the root dir of the component " + componentSelector + ": " + cleartoolOutput);
         }
 
@@ -211,7 +211,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
 
         // ensure no error has occured
         if(cleartoolOutput.contains("cleartool: Error")) {
-            launcher.getListener().error("Failed to get the dependent baselines from the baseline " + baselineSelector + ".");
+            launcher.getListener().error("[cc-ucm-baseline] Failed to get the dependent baselines from the baseline " + baselineSelector + ".");
             throw new IOException("Failed to get the dependent baselines from the baseline " + baselineSelector + ": " + cleartoolOutput);
         }
 
@@ -253,7 +253,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
         
         // ensure no error has occured
         if(cleartoolOutput.contains("cleartool: Error")) {
-            launcher.getListener().error("Failed to remove view " + viewName + ".");
+            launcher.getListener().error("[cc-ucm-baseline] Failed to remove view " + viewName + ".");
             throw new IOException("Failed to remove view " + viewName + ": " + cleartoolOutput);
         }
 
@@ -305,7 +305,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
 
         // ensure no error has occured
         if(cleartoolOutput.contains("cleartool: Error")) {
-            launcher.getListener().error("Failed to create view " + viewName + ".");
+            launcher.getListener().error("[cc-ucm-baseline] Failed to create view " + viewName + ".");
             throw new IOException("Failed to create view " + viewName + ": " + cleartoolOutput);
         }
     }
@@ -339,7 +339,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
 
         // ensure no error has occured
         if(cleartoolOutput.contains("cleartool: Error")) {
-            launcher.getListener().error("Failed to set the config spec of the view " + viewName + ".");
+            launcher.getListener().error("[cc-ucm-baseline] Failed to set the config spec of the view " + viewName + ".");
             throw new IOException("Failed to set the config spec of the view " + viewName + ": " + cleartoolOutput);
         }
     }

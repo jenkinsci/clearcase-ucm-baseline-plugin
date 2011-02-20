@@ -154,15 +154,15 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
         for(String dependentBaselineSelector: dependentBaselines) {
             int indexOfSeparator = dependentBaselineSelector.indexOf('@');
             if(indexOfSeparator == -1) {
-                if(LOGGER.isLoggable(Level.INFO)) {
-                    LOGGER.log(Level.INFO, "Ignoring dependent baseline '{0}{1}", new Object[]{dependentBaselineSelector, '\''});
-                }
+                LOGGER.log(Level.INFO, "[cc-ucm-baseline] Ignoring dependent baseline '{0}'", dependentBaselineSelector);
                 continue;
             }
 
             String dependentBaseline = dependentBaselineSelector.substring(0, indexOfSeparator);
-            String component = cleartool.getComponentFromBaseline(pvob, dependentBaseline);
-            String componentRootDir = cleartool.getComponentRootDir(pvob, component);
+            String dependentPvob = dependentBaselineSelector.substring(indexOfSeparator+1, dependentBaselineSelector.length());
+            
+            String component = cleartool.getComponentFromBaseline(dependentPvob, dependentBaseline);
+            String componentRootDir = cleartool.getComponentRootDir(dependentPvob, component);
 
             // some components may be rootless: they must simply be skipped (cf. HUDSON-6398)
             if(StringUtils.isBlank(componentRootDir)) {
@@ -211,7 +211,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
     public BuildWrapper createBuildWrapper(AbstractBuild<?, ?> build) {
         // let's ensure that a baseline has been really provided
         if(baseline == null || baseline.length() == 0) {
-            fatalErrorMessage.append("The value '").append(baseline).append("' is not a valid ClearCase UCM baseline.");
+            fatalErrorMessage.append("[cc-ucm-baseline] The value '").append(baseline).append("' is not a valid ClearCase UCM baseline.");
         }
 
         // HUDSON-5877: let's ensure the job has no publishers/notifiers coming
@@ -222,7 +222,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                 if(fatalErrorMessage.length() > 0) {
                     fatalErrorMessage.append('\n');
                 }
-                fatalErrorMessage.append("This job is set up to use a '").append(publisher.getDescriptor().getDisplayName()).append(
+                fatalErrorMessage.append("[cc-ucm-baseline] This job is set up to use a '").append(publisher.getDescriptor().getDisplayName()).append(
                         "' publisher which is not compatible with the ClearCase UCM baseline SCM mode. Please remove this publisher.");
             }
         }
@@ -357,7 +357,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
 
                         String configSpec = buildConfigSpec(cleartool, newlineForOS, fileSepForOS);
 
-                        listener.getLogger().println("The view will be created based on the following config spec:");
+                        listener.getLogger().println("[cc-ucm-baseline] The view will be created based on the following config spec:");
                         listener.getLogger().println("--- config spec start ---");
                         listener.getLogger().print(configSpec);
                         listener.getLogger().println("---  config spec end  ---");
@@ -368,7 +368,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
                         cleartool.setcs(viewName, configSpec);
                     }
                     else {
-                        listener.getLogger().println("The requested ClearCase UCM baseline is the same as previous build: Reusing previously loaded view");
+                        listener.getLogger().println("[cc-ucm-baseline] The requested ClearCase UCM baseline is the same as previous build: Reusing previously loaded view");
                     }
 
                     // --- 5. Create the environment variables ---
@@ -496,7 +496,7 @@ public class ClearCaseUcmBaselineParameterValue extends ParameterValue {
         public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             String ccUcmBaselineSCMDisplayName = Hudson.getInstance().getDescriptor(ClearCaseUcmBaselineSCM.class).getDisplayName();
             listener.fatalError(
-                    "This job is not set up to use a '"
+                    "[cc-ucm-baseline] This job is not set up to use a '"
                     + ccUcmBaselineSCMDisplayName
                     + "' SCM while it has a '"
                     + Hudson.getInstance().getDescriptor(ClearCaseUcmBaselineParameterDefinition.class).getDisplayName()

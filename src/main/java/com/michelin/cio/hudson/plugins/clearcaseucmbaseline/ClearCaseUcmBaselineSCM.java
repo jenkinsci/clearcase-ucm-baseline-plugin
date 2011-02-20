@@ -1,7 +1,8 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+ * Copyright (c) 2010-2011, Manufacture Française des Pneumatiques Michelin,
+ * Romain Seguy
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -80,7 +81,7 @@ public class ClearCaseUcmBaselineSCM extends SCM {
         // has the project some parameters?
         ParametersDefinitionProperty params = (ParametersDefinitionProperty) build.getProject().getProperty(ParametersDefinitionProperty.class);
         if(params == null) {
-            listener.fatalError("No parameters have been defined for this project: To use the ClearCase UCM baseline mode, you MUST add a '"
+            listener.fatalError("[cc-ucm-baseline] No parameters have been defined for this project: To use the ClearCase UCM baseline mode, you MUST add a '"
                     + ClearCaseUcmBaselineParameterDefinition.PARAMETER_NAME
                     + "' parameter to the project.");
             return false;
@@ -96,7 +97,7 @@ public class ClearCaseUcmBaselineSCM extends SCM {
                     // the parameter with the name ClearCase UCM baseline is NOT
                     // a real ClearCaseUcmBaselineParameterDefinition, we make
                     // the build fail
-                    listener.fatalError("A parameter named '"
+                    listener.fatalError("[cc-ucm-baseline] A parameter named '"
                             + ClearCaseUcmBaselineParameterDefinition.PARAMETER_NAME
                             + "' doesn't correspond to what's expected by "
                             + Hudson.getInstance().getDescriptor(ClearCaseUcmBaselineSCM.class).getDisplayName()
@@ -109,7 +110,7 @@ public class ClearCaseUcmBaselineSCM extends SCM {
             }
         }
         if(clearCaseUcmBaselineParameters > 1) {
-            listener.fatalError("More than two '"
+            listener.fatalError("[cc-ucm-baseline] More than two '"
                     + ClearCaseUcmBaselineParameterDefinition.PARAMETER_NAME
                     + "' parameters have been defined for this project: Aborting the build to avoid any conflict with the "
                     + AbstractClearCaseScm.CLEARCASE_VIEWNAME_ENVSTR
