@@ -448,6 +448,13 @@ public class ClearCaseUcmBaselineParameterDefinition extends ParameterDefinition
             return FormValidation.ok();
         }
 
+        public FormValidation doCheckExcludeElementCheckedout(@QueryParameter boolean excludeElementCheckedout, @QueryParameter boolean snapshotView) {
+            if(excludeElementCheckedout && snapshotView) {
+                return FormValidation.error(ResourceBundleHolder.get(ClearCaseUcmBaselineParameterDefinition.class).format("NoExcludeWithSnapshotView"));
+            }
+            return FormValidation.ok();
+        }
+
         public FormValidation doCheckMoreRecentThan(@QueryParameter String value) {
             if(StringUtils.isNotBlank(value) && !value.matches(MORE_RECENT_THAN_REGEX)) {
                 return FormValidation.error(ResourceBundleHolder.get(ClearCaseUcmBaselineParameterDefinition.class).format("InvalidMoreRecentThanFormat"));
