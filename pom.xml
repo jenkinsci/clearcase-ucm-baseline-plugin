@@ -11,7 +11,7 @@
   <groupId>org.jvnet.hudson.plugins</groupId>
   <artifactId>clearcase-ucm-baseline</artifactId>
   <packaging>hpi</packaging>
-  <name>ClearCase UCM Baseline Plug-in</name>
+  <name>ClearCase UCM Baseline Plugin</name>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/ClearCase+UCM+Baseline+Plugin</url>
   <version>1.7.4-SNAPSHOT</version>
 
