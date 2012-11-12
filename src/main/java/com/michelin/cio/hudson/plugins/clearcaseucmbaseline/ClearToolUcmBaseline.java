@@ -104,6 +104,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
      * <p>The ClearCase UCM components are cached for each instance of the class.</p>
      *
      * @see ftp://ftp.software.ibm.com/software/rational/docs/v2002/cc/cc_ref_1.pdf (%[component]p, page 392)
+     * @see http://publib.boulder.ibm.com/infocenter/cchelp/v8r0m0/index.jsp?topic=%2Fcom.ibm.rational.clearcase.cc_ref.doc%2Ftopics%2Ffmt_ccase.htm (%[component]Xp, Table 2)
      */
     public String getComponentFromBaseline(String pvob, String baseline) throws IOException, InterruptedException {
         String baselineSelector = baseline + '@' + pvob;
@@ -112,11 +113,11 @@ public class ClearToolUcmBaseline extends ClearToolExec {
             return componentsCache.get(baselineSelector);
         }
 
-        // cleartool lsbl -fmt "%[component]p" <baseline>@<pvob>
+        // cleartool lsbl -fmt "%[component]Xp" <baseline>@<pvob>
         ArgumentListBuilder cmd = new ArgumentListBuilder();
         cmd.add("lsbl");
         cmd.add("-fmt");
-        cmd.add("%[component]p");
+        cmd.add("%[component]Xp");
         cmd.add(baselineSelector);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -148,7 +149,7 @@ public class ClearToolUcmBaseline extends ClearToolExec {
      * @see ftp://ftp.software.ibm.com/software/rational/docs/v2002/cc/cc_ref_1.pdf (%[root_dir]p, page 392)
      */
     public String getComponentRootDir(String pvob, String component) throws IOException, InterruptedException {
-        String componentSelector = component + '@' + pvob;
+        String componentSelector = component;
 
         if(componentRootDirsCache.containsKey(componentSelector)) {
             return componentRootDirsCache.get(componentSelector);
